@@ -1,0 +1,2328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b7a3e" />
+  <title>Misión Freire 30 | Ludo: El Desafío de los Recuerdos</title>
+  <style>
+    :root {
+      --bg-green-1: #064e27;
+      --bg-green-2: #0b7a3e;
+      --gold: #ffd13b;
+      --red: #e53935;
+      --red-light: #ffebee;
+      --red-dark: #b71c1c;
+      --blue: #1e88e5;
+      --blue-light: #e3f2fd;
+      --blue-dark: #0d47a1;
+      --yellow: #f9a825;
+      --yellow-light: #fffde7;
+      --green: #2e7d32;
+      --green-light: #e8f5e9;
+      --green-dark: #1b5e20;
+      --ink: #172026;
+      --border: #1b2a22;
+      --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      min-height: 100dvh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 20% 15%, rgba(255, 209, 59, 0.16), transparent 35%),
+        radial-gradient(circle at 85% 85%, rgba(46, 204, 113, 0.22), transparent 40%),
+        repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 24px),
+        linear-gradient(155deg, var(--bg-green-1) 0%, var(--bg-green-2) 55%, var(--bg-green-1) 100%);
+      padding: 10px 12px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 90;
+    }
+
+    /* Header */
+    .hero-banner {
+      width: 100%;
+      max-width: 1120px;
+      background:
+        radial-gradient(circle at 8% 50%, rgba(255, 209, 59, 0.28), transparent 36%),
+        radial-gradient(circle at 92% 20%, rgba(255, 209, 59, 0.16), transparent 32%),
+        linear-gradient(135deg, #053e1f 0%, #0d7a3f 52%, #064d27 100%);
+      border: 3px solid var(--gold);
+      border-radius: 22px;
+      padding: 12px 18px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .logo-frame {
+      width: 78px;
+      height: 78px;
+      border-radius: 20px;
+      background: #ffffff;
+      border: 3px solid var(--gold);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), 0 0 18px rgba(255, 209, 59, 0.35);
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .logo-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .hero-titles {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      align-self: flex-start;
+      background: rgba(255, 209, 59, 0.18);
+      color: var(--gold);
+      border: 1.5px solid rgba(255, 209, 59, 0.6);
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2px 9px;
+      border-radius: 999px;
+    }
+
+    .hero-titles h1 {
+      font-size: clamp(1.15rem, 2.5vw, 1.65rem);
+      font-weight: 900;
+      color: #ffffff;
+      line-height: 1.1;
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+    }
+
+    .hero-titles h1 span {
+      color: var(--gold);
+    }
+
+    .hero-titles p {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #dcfce7;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill-tag {
+      background: rgba(0, 0, 0, 0.28);
+      color: #fff9db;
+      font-weight: 800;
+      font-size: 0.76rem;
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255, 209, 59, 0.65);
+    }
+
+    .btn-small {
+      appearance: none;
+      border: 2px solid var(--border);
+      background: linear-gradient(180deg, #fffdf4, #ffe082);
+      color: #1a1200;
+      font-weight: 900;
+      font-size: 0.8rem;
+      padding: 7px 13px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--border);
+      transition: transform 0.1s ease, filter 0.12s ease;
+    }
+
+    .btn-small:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-small:active {
+      transform: translateY(2px);
+      box-shadow: none;
+    }
+
+    /* Main Layout */
+    .game-layout {
+      width: 100%;
+      max-width: 1120px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 14px;
+      align-items: start;
+    }
+
+    @media (max-width: 920px) {
+      .game-layout {
+        grid-template-columns: 1fr;
+        max-width: 650px;
+      }
+    }
+
+    /* Visual Image Board */
+    .board-frame {
+      background: linear-gradient(145deg, #ffd13b, #f59e0b);
+      padding: 6px;
+      border-radius: 20px;
+      border: 4px solid var(--border);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .board-canvas {
+      position: relative;
+      width: 100%;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 2.5px solid var(--border);
+      background: #ffffff;
+    }
+
+    .board-img {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Tokens layer */
+    .tokens-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .token {
+      position: absolute;
+      width: 4.2%;
+      height: 3.15%;
+      border-radius: 50%;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.65), 0 0 0 1.5px rgba(0,0,0,0.45);
+      transform: translate(-50%, -50%);
+      transition: left 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), top 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(0.5rem, 1.05vw, 0.72rem);
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.75);
+      pointer-events: auto;
+      cursor: default;
+    }
+
+    .token.color-red { background: radial-gradient(circle at 35% 30%, #ff7675, #c62828); }
+    .token.color-blue { background: radial-gradient(circle at 35% 30%, #64b5f6, #1565c0); }
+    .token.color-yellow { background: radial-gradient(circle at 35% 30%, #fff176, #f57f17); color: #2b1f00; text-shadow: none; }
+    .token.color-green { background: radial-gradient(circle at 35% 30%, #81c784, #1b5e20); }
+
+    .token.selectable {
+      cursor: pointer;
+      animation: tokenPulse 0.75s infinite alternate;
+      z-index: 20;
+      border-color: #ffd13b;
+      box-shadow: 0 0 0 4px rgba(255, 209, 59, 0.9), 0 5px 12px rgba(0,0,0,0.65);
+    }
+
+    @keyframes tokenPulse {
+      from { transform: translate(-50%, -50%) scale(1.1); }
+      to { transform: translate(-50%, -50%) scale(1.36); }
+    }
+
+    .token.finished {
+      opacity: 0.95;
+      transform: translate(-50%, -50%) scale(0.88);
+    }
+
+    /* Side Control Panel */
+    .side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-card {
+      background: #ffffff;
+      border: 3px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3);
+    }
+
+    .turn-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 2.5px solid var(--border);
+      margin-bottom: 12px;
+      font-weight: 800;
+    }
+
+    .turn-banner.theme-red { background: var(--red-light); color: var(--red-dark); }
+    .turn-banner.theme-blue { background: var(--blue-light); color: var(--blue-dark); }
+    .turn-banner.theme-yellow { background: var(--yellow-light); color: #8c5200; }
+    .turn-banner.theme-green { background: var(--green-light); color: var(--green-dark); }
+
+    .dice-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dice-box {
+      width: 66px;
+      height: 66px;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #ffffff, #e2e8f0);
+      border: 3px solid var(--border);
+      box-shadow: 0 4px 0 var(--border), inset 0 2px 3px rgba(255,255,255,0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 9px;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    .dice-face {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      place-items: center;
+      gap: 2px;
+    }
+
+    .pip {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #111827;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.25);
+    }
+
+    .pip.empty {
+      background: transparent;
+      box-shadow: none;
+    }
+
+    .dice-box.rolling {
+      animation: diceShake 0.4s ease-in-out infinite;
+    }
+
+    @keyframes diceShake {
+      0% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(-12deg) scale(1.08); }
+      50% { transform: rotate(10deg) scale(0.96); }
+      75% { transform: rotate(-8deg) scale(1.06); }
+      100% { transform: rotate(0deg) scale(1); }
+    }
+
+    .btn-roll {
+      flex: 1;
+      appearance: none;
+      border: 3px solid var(--border);
+      background: linear-gradient(180deg, #ffd13b 0%, #f59e0b 100%);
+      color: #1a1200;
+      font-weight: 900;
+      font-size: 1.02rem;
+      padding: 14px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 var(--border);
+    }
+
+    .btn-roll:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    .btn-roll:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Physical Dice Pad */
+    .physical-dice-pad {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .physical-dice-pad.active {
+      display: flex;
+    }
+
+    .physical-dice-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+    }
+
+    .phys-btn {
+      appearance: none;
+      border: 2.5px solid var(--border);
+      background: linear-gradient(180deg, #fffdf4, #ffe082);
+      color: #1a1200;
+      font-weight: 900;
+      font-size: 1.05rem;
+      padding: 10px 4px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--border);
+    }
+
+    .phys-btn:active:not(:disabled) {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    .phys-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .status-hint {
+      margin-top: 10px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: #334155;
+      min-height: 2.3em;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Players Scoreboard */
+    .players-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .player-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border-radius: 10px;
+      border: 2px solid rgba(0,0,0,0.12);
+      background: #f8fafc;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .player-row.active {
+      border-color: var(--border);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+      background: #fffbeb;
+    }
+
+    .player-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      box-shadow: 0 0 0 1.5px var(--border);
+      display: inline-block;
+      margin-right: 7px;
+      vertical-align: middle;
+    }
+
+    /* Event Log */
+    .log-box {
+      max-height: 165px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      font-size: 0.8rem;
+      color: #334155;
+    }
+
+    .log-entry {
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      border-left: 4px solid #94a3b8;
+    }
+
+    .log-entry.good { background: #ecfdf5; border-left-color: #10b981; }
+    .log-entry.bad { background: #fef2f2; border-left-color: #ef4444; }
+    .log-entry.info { background: #eff6ff; border-left-color: #3b82f6; }
+
+    /* Modals */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 30, 17, 0.78);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 14px;
+      z-index: 80;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 500px;
+      background: #ffffff;
+      border: 4px solid var(--border);
+      border-radius: 22px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.45);
+      overflow: hidden;
+      animation: popIn 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.92) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-header {
+      padding: 14px 18px;
+      background: linear-gradient(90deg, #0b7a3e, #129950);
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--border);
+    }
+
+    .modal-header h2 {
+      font-size: 1.08rem;
+      font-weight: 900;
+    }
+
+    .year-pill {
+      background: var(--gold);
+      color: #1a1200;
+      font-weight: 900;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 2px solid var(--border);
+      font-size: 0.95rem;
+    }
+
+    .modal-body {
+      padding: 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .question-text {
+      font-size: 1.04rem;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.38;
+    }
+
+    .milestone-banner {
+      background: linear-gradient(90deg, #ecfdf5, #fef9c3);
+      border: 2px solid #16a34a;
+      border-radius: 12px;
+      padding: 8px 11px;
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: #064e27;
+      line-height: 1.3;
+    }
+
+    .options-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .option-btn {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      padding: 11px 13px;
+      border-radius: 12px;
+      border: 2.5px solid #cbd5e1;
+      background: #f8fafc;
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 0.93rem;
+      cursor: pointer;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      background: #fffbeb;
+      border-color: #f59e0b;
+    }
+
+    .option-btn.correct {
+      background: #dcfce7;
+      border-color: #16a34a;
+      color: #14532d;
+    }
+
+    .option-btn.wrong {
+      background: #fee2e2;
+      border-color: #dc2626;
+      color: #7f1d1d;
+    }
+
+    .trivia-feedback {
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      display: none;
+    }
+
+    .trivia-feedback.show { display: block; }
+    .trivia-feedback.good { background: #dcfce7; color: #14532d; border: 2px solid #16a34a; }
+    .trivia-feedback.bad { background: #fee2e2; color: #7f1d1d; border: 2px solid #dc2626; }
+
+    .btn-primary {
+      appearance: none;
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 3px solid var(--border);
+      background: linear-gradient(180deg, #ffd13b, #f59e0b);
+      color: #1a1200;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 3px 0 var(--border);
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .setup-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .setup-field.full {
+      grid-column: 1 / -1;
+    }
+
+    .setup-field select, .setup-field input {
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 2px solid #94a3b8;
+      font-weight: 700;
+      font-size: 0.88rem;
+      background: #fff;
+    }
+
+    .team-config-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      border-radius: 10px;
+      background: #f8fafc;
+      border: 2px solid #e2e8f0;
+    }
+
+    .team-config-row input[type="text"] {
+      flex: 1;
+      min-width: 0;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+
+    .team-config-row select {
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      font-weight: 700;
+      font-size: 0.82rem;
+    }
+
+    /* Register & Album Modals */
+    .btn-secondary {
+      appearance: none;
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 2.5px solid var(--border);
+      background: #f1f5f9;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+    }
+
+    .camera-box {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      background: #0f172a;
+      border-radius: 14px;
+      border: 2.5px solid var(--border);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #cbd5e1;
+      font-size: 0.85rem;
+      font-weight: 700;
+      position: relative;
+    }
+
+    .camera-box video, .camera-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .camera-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stats-pill-row {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .stat-badge {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.86rem;
+      border: 2px solid var(--border);
+    }
+
+    .stat-badge.ok { background: #dcfce7; color: #14532d; }
+    .stat-badge.bad { background: #fee2e2; color: #7f1d1d; }
+
+    .album-list {
+      max-height: 360px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .album-card {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 14px;
+      border: 2px solid #cbd5e1;
+      background: #f8fafc;
+    }
+
+    .album-thumb {
+      width: 72px;
+      height: 72px;
+      border-radius: 12px;
+      border: 2px solid var(--border);
+      object-fit: cover;
+      background: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Header -->
+  <header class="hero-banner">
+    <div class="hero-brand">
+      <div class="logo-frame">
+        <img src="logo-30.jpg" alt="30 Años Aniversarios del Colegio Paulo Freire" />
+      </div>
+      <div class="hero-titles">
+        <span class="hero-eyebrow">🎓 Colegio Paulo Freire • 1996 – 2026</span>
+        <h1><span>Misión Freire 30</span> — El Desafío de los Recuerdos</h1>
+        <p>30 años aprendiendo juntos · ¡Respondé bien para avanzar y celebrar!</p>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <span class="pill-tag">🎲 Caés en un año → Respondés → ¡Si fallás volvés atrás!</span>
+      <button type="button" class="btn-small" id="btn-album">🏅 Recuerdos</button>
+      <button type="button" class="btn-small" id="btn-sound">🔊 Sonido: ON</button>
+      <button type="button" class="btn-small" id="btn-new-game">⚙️ Configurar</button>
+    </div>
+  </header>
+
+  <!-- Main Game -->
+  <main class="game-layout">
+    <!-- Visual Image Board -->
+    <section class="board-frame" aria-label="Tablero visual Misión Freire 30">
+      <div class="board-canvas">
+        <img src="tablero.jpg" class="board-img" alt="Tablero Misión Freire 30 - Colegio Paulo Freire" />
+        <div class="tokens-layer" id="tokens-layer"></div>
+      </div>
+    </section>
+
+    <!-- Side Panel -->
+    <aside class="side-panel">
+      <div class="panel-card">
+        <div class="turn-banner theme-red" id="turn-banner">
+          <span id="turn-label">Turno: Equipo Rojo</span>
+          <span id="turn-badge">1996</span>
+        </div>
+
+        <!-- Digital Dice UI -->
+        <div class="dice-area" id="digital-dice-area">
+          <div class="dice-box" id="dice-box">🎲</div>
+          <button type="button" class="btn-roll" id="btn-roll">TIRAR DADO</button>
+        </div>
+
+        <!-- Physical Dice Input UI -->
+        <div class="physical-dice-pad" id="physical-dice-pad">
+          <div style="font-size:0.82rem; font-weight:800; color:#334155;">
+            ✋ Ingresá el valor que salió en tu dado físico:
+          </div>
+          <div class="physical-dice-grid" id="physical-dice-grid">
+            <button type="button" class="phys-btn" data-val="1">1</button>
+            <button type="button" class="phys-btn" data-val="2">2</button>
+            <button type="button" class="phys-btn" data-val="3">3</button>
+            <button type="button" class="phys-btn" data-val="4">4</button>
+            <button type="button" class="phys-btn" data-val="5">5</button>
+            <button type="button" class="phys-btn" data-val="6">6</button>
+          </div>
+        </div>
+
+        <div class="status-hint" id="status-hint">
+          Configurá la partida para comenzar el desafío.
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div style="font-weight: 900; font-size: 0.9rem; margin-bottom: 8px;">🏆 Equipos y Progreso</div>
+        <div class="players-list" id="players-list"></div>
+      </div>
+
+      <div class="panel-card">
+        <div style="font-weight: 900; font-size: 0.9rem; margin-bottom: 8px;">📜 Bitácora del Juego</div>
+        <div class="log-box" id="log-box"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Trivia Modal -->
+  <div class="modal-backdrop" id="trivia-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="trivia-title">Desafío de los Recuerdos</h2>
+        <span class="year-pill" id="trivia-year">📅 1996</span>
+      </div>
+      <div class="modal-body">
+        <div class="milestone-banner" id="trivia-milestone"></div>
+        <div class="question-text" id="trivia-question">Pregunta...</div>
+        <div class="options-grid" id="trivia-options"></div>
+        <div class="trivia-feedback" id="trivia-feedback"></div>
+        <button type="button" class="btn-primary" id="trivia-continue" style="display:none;">Continuar ➜</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Setup Modal -->
+  <div class="modal-backdrop open" id="setup-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🎲 Configurar Misión Freire 30</h2>
+        <span class="year-pill">1996–2026</span>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.85rem; font-weight:700; color:#334155;">
+          Cada vez que tu ficha cae en un casillero del tablero, respondés una pregunta del <strong>año de ese casillero</strong>.
+          ¡Si contestás bien te mantenés; si contestás mal volvés atrás!
+        </p>
+
+        <div class="setup-grid">
+          <label class="setup-field">
+            Modo de Dado
+            <select id="cfg-dice-mode">
+              <option value="digital" selected>🎲 Dado Digital (en pantalla)</option>
+              <option value="physical">✋ Dado Físico (ingresar 1–6)</option>
+            </select>
+          </label>
+          <label class="setup-field">
+            Salida de la base
+            <select id="cfg-exit">
+              <option value="6">Solo con 6 (Clásico)</option>
+              <option value="any" selected>Con cualquier dado (Ágil)</option>
+            </select>
+          </label>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div class="team-config-row">
+            <span class="player-dot" style="background:var(--red);"></span>
+            <input type="text" id="name-red" value="Equipo Rojo" maxlength="22" />
+            <select id="type-red">
+              <option value="human" selected>👤 Humano</option>
+              <option value="bot">🤖 Bot</option>
+            </select>
+          </div>
+          <div class="team-config-row">
+            <span class="player-dot" style="background:var(--blue);"></span>
+            <input type="text" id="name-blue" value="Equipo Azul" maxlength="22" />
+            <select id="type-blue">
+              <option value="human" selected>👤 Humano</option>
+              <option value="bot">🤖 Bot</option>
+              <option value="off">⛔ No juega</option>
+            </select>
+          </div>
+          <div class="team-config-row">
+            <span class="player-dot" style="background:var(--yellow);"></span>
+            <input type="text" id="name-yellow" value="Equipo Amarillo" maxlength="22" />
+            <select id="type-yellow">
+              <option value="human">👤 Humano</option>
+              <option value="bot" selected>🤖 Bot</option>
+              <option value="off">⛔ No juega</option>
+            </select>
+          </div>
+          <div class="team-config-row">
+            <span class="player-dot" style="background:var(--green);"></span>
+            <input type="text" id="name-green" value="Equipo Verde" maxlength="22" />
+            <select id="type-green">
+              <option value="human">👤 Humano</option>
+              <option value="bot">🤖 Bot</option>
+              <option value="off" selected>⛔ No juega</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="button" class="btn-primary" id="btn-start-game">🚀 ¡Empezar a Jugar!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winner Modal -->
+  <div class="modal-backdrop" id="win-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🏆 ¡Misión Cumplida!</h2>
+        <span class="year-pill">30 Años PF</span>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size:3rem;">🎉🎓</div>
+        <h3 id="win-team-name" style="font-size:1.3rem; font-weight:900;">¡Ganó el Equipo!</h3>
+        <div class="stats-pill-row" id="win-stats-pills"></div>
+        <p id="win-stats" style="font-size:0.88rem; font-weight:700; color:#475569;"></p>
+        <button type="button" class="btn-primary" id="btn-open-register">📸 Registrarse y sacar foto (Opcional)</button>
+        <button type="button" class="btn-secondary" id="btn-play-again">🔄 Jugar otra vez</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Family Register & Photo Modal (Optional) -->
+  <div class="modal-backdrop" id="register-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>📸 Registro de Familia</h2>
+        <span class="year-pill">Opcional</span>
+      </div>
+      <div class="modal-body">
+        <label class="setup-field">
+          Nombre de la Familia / Participantes
+          <input type="text" id="reg-family-name" placeholder="Ej: Familia Rodríguez" maxlength="40" />
+        </label>
+
+        <div class="stats-pill-row" id="reg-stats-pills"></div>
+
+        <div class="camera-box" id="camera-preview-box">
+          <span id="camera-placeholder">📷 Podés sacar una foto de recuerdo (opcional)</span>
+          <video id="camera-video" autoplay playsinline style="display:none;"></video>
+          <img id="photo-preview" alt="Foto de recuerdo" style="display:none;" />
+        </div>
+
+        <div class="camera-actions">
+          <button type="button" class="btn-secondary" id="btn-start-cam">📷 Activar Cámara</button>
+          <button type="button" class="btn-secondary" id="btn-take-photo" style="display:none; background:#fef08a;">📸 Sacar Foto</button>
+          <label class="btn-secondary" style="text-align:center; display:inline-block;">
+            🖼️ Elegir / Sacar Foto
+            <input type="file" id="reg-file-input" accept="image/*" capture="user" style="display:none;" />
+          </label>
+        </div>
+
+        <button type="button" class="btn-primary" id="btn-save-register">💾 Guardar Recuerdo</button>
+        <button type="button" class="btn-secondary" id="btn-cancel-register">Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Album / Hall of Fame Modal -->
+  <div class="modal-backdrop" id="album-modal" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>🏅 Álbum de Recuerdos</h2>
+        <span class="year-pill">30 Años PF</span>
+      </div>
+      <div class="modal-body">
+        <div class="album-list" id="album-list"></div>
+        <button type="button" class="btn-primary" id="btn-close-album">Cerrar</button>
+        <button type="button" class="btn-secondary" id="btn-clear-album" style="color:#b91c1c;">🗑️ Vaciar Álbum</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      /* =========================================================
+         1. QUESTION BANK BY YEAR (1996, 2001, 2006, 2011, 2016, 2021, 2026)
+         ========================================================= */
+      const QUESTIONS_BY_YEAR = {
+        "1996": [
+          {
+            q: "El 12 de diciembre de 1996 comenzó nuestra historia. ¿Qué nació ese día?",
+            options: ["El Colegio Paulo Freire", "El primer celular táctil", "La primera red Wi-Fi del barrio"],
+            answer: 0,
+            fact: "El 12 de diciembre de 1996 se fundó el Colegio Paulo Freire."
+          },
+          {
+            q: "En 1996 el Colegio tomó el nombre de Paulo Freire, quien fue un reconocido:",
+            options: ["Astronauta brasileño", "Pedagogo y educador que defendía el diálogo", "Campeón olímpico de natación"],
+            answer: 1,
+            fact: "Paulo Freire inspiró el proyecto educativo del colegio basado en el diálogo y el pensamiento crítico."
+          },
+          {
+            q: "En las primeras computadoras del Colegio en 1996, ¿qué capacidad tenía un disquete de 3 ½ pulgadas?",
+            options: ["128 MB", "1,44 MB", "16 GB"],
+            answer: 1,
+            fact: "Un disquete de 3 ½ pulgadas guardaba apenas 1,44 MB: ¡ni una foto actual!"
+          },
+          {
+            q: "En el año de la fundación del Colegio (1996), ¿qué mascota virtual con forma de huevo fue furor en los recreos?",
+            options: ["Furby", "Tamagotchi", "Pokémon Go"],
+            answer: 1,
+            fact: "El Tamagotchi debutó en 1996 con pantalla blanco y negro y 3 botones."
+          },
+          {
+            q: "En 1996, mientras el Colegio abría sus puertas, ¿qué supercomputadora venció por primera vez a Garry Kasparov en ajedrez?",
+            options: ["Deep Blue", "ChatGPT", "Watson"],
+            answer: 0,
+            fact: "Deep Blue derrotó al campeón mundial en febrero de 1996."
+          },
+          {
+            q: "En 1996 se celebraron los Juegos Olímpicos del Centenario. ¿En qué ciudad fueron?",
+            options: ["Sídney", "Barcelona", "Atlanta"],
+            answer: 2,
+            fact: "Atlanta 1996 conmemoró los 100 años de los Juegos Olímpicos modernos."
+          },
+          {
+            q: "¿Qué consola de 64 bits salió en 1996 junto a Super Mario 64, mientras arrancaba el Colegio?",
+            options: ["Nintendo 64", "PlayStation 3", "Nintendo Switch"],
+            answer: 0,
+            fact: "La Nintendo 64 marcó a toda la primera generación de estudiantes."
+          }
+        ],
+        "2001": [
+          {
+            q: "En 2001, el Colegio Paulo Freire celebraba un hito muy especial: cumplía sus...",
+            options: ["Primeros 5 años", "Primeros 15 años", "Primeros 25 años"],
+            answer: 0,
+            fact: "De 1996 a 2001 el Colegio transitó sus primeros 5 años de crecimiento y comunidad."
+          },
+          {
+            q: "Si un estudiante empezó 1º de escuela cuando se fundó el Colegio en 1996, ¿en qué año escolar estaba en 2001?",
+            options: ["En 2º de escuela", "En 6º de escuela", "Ya había terminado el liceo"],
+            answer: 1,
+            fact: "¡Cinco años después de 1996, esa primera generación ya estaba cerrando Primaria!"
+          },
+          {
+            q: "Para buscar información en las tareas de los primeros 5 años del Colegio, en enero de 2001 nació:",
+            options: ["Wikipedia", "TikTok", "Spotify"],
+            answer: 0,
+            fact: "Wikipedia se lanzó el 15 de enero de 2001."
+          },
+          {
+            q: "En 2001, durante los primeros 5 años del Colegio, se estrenó la primera película de magia:",
+            options: ["Harry Potter y la piedra filosofal", "Frozen", "Encanto"],
+            answer: 0,
+            fact: "Harry Potter y la piedra filosofal llegó a los cines en 2001 y fue furor en las aulas."
+          },
+          {
+            q: "En 2001, ¿qué sistema operativo con una colina verde de fondo usaban las compus de informática?",
+            options: ["Windows 95", "Windows XP", "Windows 11"],
+            answer: 1,
+            fact: "Windows XP salió en octubre de 2001 y acompañó años de trabajos escolares."
+          },
+          {
+            q: "En noviembre de 2001, mientras el Colegio cumplía 5 años, Uruguay clasificó al Mundial 2002 venciendo a:",
+            options: ["Australia", "Nueva Zelanda", "Costa Rica"],
+            answer: 0,
+            fact: "La Celeste ganó 3-0 en el Estadio Centenario y volvió a un Mundial tras 12 años."
+          },
+          {
+            q: "En octubre de 2001 salió el primer iPod para escuchar música camino al Colegio. ¿Cuál era su lema?",
+            options: ["1.000 canciones en tu bolsillo", "Fotos en la nube", "Internet en tu reloj"],
+            answer: 0,
+            fact: "El primer iPod tenía 5 GB y revolucionó cómo escuchábamos música."
+          }
+        ],
+        "2006": [
+          {
+            q: "En 2006, el Colegio Paulo Freire festejaba su primera gran década. ¿Cuántos años cumplía?",
+            options: ["5 años", "10 años", "20 años"],
+            answer: 1,
+            fact: "En 2006 se celebraron los primeros 10 años del Colegio (1996–2006)."
+          },
+          {
+            q: "Quienes entraron a 1º de escuela en 1996, en el 10º aniversario del Colegio (2006) ya estaban:",
+            options: ["En Jardín", "En Secundaria / Bachillerato", "Recién empezando 1º"],
+            answer: 1,
+            fact: "¡Diez años después de la fundación, los primeros chicos ya eran adolescentes!"
+          },
+          {
+            q: "En 2006 (los 10 años del Colegio) nació una red social de mensajes cortos de 140 caracteres:",
+            options: ["Instagram", "Twitter (hoy X)", "TikTok"],
+            answer: 1,
+            fact: "Jack Dorsey envió el primer tuit en marzo de 2006."
+          },
+          {
+            q: "En 2006, la Unión Astronómica Internacional cambió los libros de ciencia del Colegio al reclasificar a:",
+            options: ["Marte", "Plutón como planeta enano", "Saturno"],
+            answer: 1,
+            fact: "Desde agosto de 2006 el Sistema Solar pasó a estudiarse con 8 planetas clásicos."
+          },
+          {
+            q: "En octubre de 2006, mientras el Colegio cumplía 10 años, ¿qué empresa compró YouTube?",
+            options: ["Meta", "Google", "Sony"],
+            answer: 1,
+            fact: "Google adquirió YouTube apenas un año después de su creación."
+          },
+          {
+            q: "¿Qué selección ganó el Mundial de Alemania 2006 en el décimo aniversario del Colegio?",
+            options: ["Brasil", "Italia", "España"],
+            answer: 1,
+            fact: "Italia venció a Francia por penales en la final de Berlín 2006."
+          },
+          {
+            q: "¿Qué consola de Nintendo salió en 2006 y se jugaba moviendo el control en el aire en familia?",
+            options: ["Nintendo Wii", "Game Boy Advance", "Nintendo 64"],
+            answer: 0,
+            fact: "Wii Sports fue un éxito en reuniones familiares desde 2006."
+          }
+        ],
+        "2011": [
+          {
+            q: "En 2011, el Colegio Paulo Freire celebró sus...",
+            options: ["10 años", "15 años", "25 años"],
+            answer: 1,
+            fact: "De 1996 a 2011 pasaron 15 años de historia compartida."
+          },
+          {
+            q: "En 2011 (15 años del Colegio), miles de estudiantes en Uruguay trabajaban en clase con las compus del:",
+            options: ["Plan Ceibal", "Plan Apolo", "Plan Horizonte"],
+            answer: 0,
+            fact: "Las ceibalitas verdes y blancas marcaron toda una generación escolar."
+          },
+          {
+            q: "En julio de 2011, toda la comunidad del Colegio festejó un título histórico de la Celeste:",
+            options: ["Campeona de la Copa América 2011", "Campeona del Mundial Sub-17", "Medalla de oro olímpica"],
+            answer: 0,
+            fact: "Uruguay ganó su 15ª Copa América venciendo 3-0 a Paraguay en Buenos Aires."
+          },
+          {
+            q: "En noviembre de 2011, mientras el Colegio cumplía 15 años, salió la versión oficial 1.0 de:",
+            options: ["Minecraft", "Fortnite", "Roblox"],
+            answer: 0,
+            fact: "Minecraft 1.0 se lanzó en noviembre de 2011 y sigue siendo favorito hoy."
+          },
+          {
+            q: "En 2011 cerró sus vuelos espaciales un programa histórico de la NASA que vimos crecer desde 1996:",
+            options: ["Transbordadores Espaciales", "Cohetes Saturno V", "Estación Mir"],
+            answer: 0,
+            fact: "El transbordador Atlantis completó la última misión STS-135 en julio de 2011."
+          },
+          {
+            q: "¿Qué famosa saga cinematográfica que empezó en 2001 (5 años del Colegio) terminó en 2011 (15 años)?",
+            options: ["Harry Potter", "Star Wars", "Toy Story"],
+            answer: 0,
+            fact: "Las Reliquias de la Muerte: Parte 2 cerró la saga en 2011."
+          },
+          {
+            q: "¿Qué app del fantasmita para mandar fotos que desaparecen nació en 2011?",
+            options: ["Snapchat", "WhatsApp", "Telegram"],
+            answer: 0,
+            fact: "Snapchat se lanzó en 2011."
+          }
+        ],
+        "2016": [
+          {
+            q: "En 2016, el Colegio Paulo Freire cumplió dos décadas aprendiendo juntos. ¿Cuántos años eran?",
+            options: ["15 años", "20 años", "25 años"],
+            answer: 1,
+            fact: "En 2016 el Colegio celebró su 20º aniversario (1996–2016)."
+          },
+          {
+            q: "En julio de 2016 (los 20 años del Colegio), millones de jóvenes salían a caminar jugando con GPS a:",
+            options: ["Among Us", "Pokémon GO", "Brawl Stars"],
+            answer: 1,
+            fact: "Pokémon GO llevó la realidad aumentada a las plazas y calles en 2016."
+          },
+          {
+            q: "En 2016, por primera vez en la historia, los Juegos Olímpicos se realizaron en Sudamérica. ¿Dónde?",
+            options: ["Buenos Aires", "Río de Janeiro", "Santiago de Chile"],
+            answer: 1,
+            fact: "Río 2016 fue la primera sede olímpica sudamericana."
+          },
+          {
+            q: "En febrero de 2016, los profes de Física celebraron la primera detección directa de:",
+            options: ["Ondas gravitacionales", "Un décimo planeta", "Agua líquida en el Sol"],
+            answer: 0,
+            fact: "El observatorio LIGO confirmó las ondas predichas por Einstein."
+          },
+          {
+            q: "En julio de 2016, mientras el Colegio cumplía 20 años, la sonda espacial Juno de la NASA llegó a:",
+            options: ["Saturno", "Júpiter", "Neptuno"],
+            answer: 1,
+            fact: "Juno continúa estudiando la atmósfera y el interior de Júpiter."
+          },
+          {
+            q: "¿Qué serie ambientada en los años 80 (Hawkins y el 'Upside Down') se estrenó en 2016?",
+            options: ["Stranger Things", "The Mandalorian", "Wednesday"],
+            answer: 0,
+            fact: "Stranger Things debutó en julio de 2016."
+          },
+          {
+            q: "¿Qué película animada de 2016 protagoniza la coneja policía Judy Hopps?",
+            options: ["Zootopia", "Sing", "Buscando a Dory"],
+            answer: 0,
+            fact: "Zootopia ganó el Óscar a Mejor Película Animada."
+          }
+        ],
+        "2021": [
+          {
+            q: "En 2021, el Colegio Paulo Freire celebró sus Bodas de Plata. ¿Cuántos años cumplía?",
+            options: ["20 años", "25 años", "30 años"],
+            answer: 1,
+            fact: "De 1996 a 2021 el Colegio festejó sus 25 años de historia."
+          },
+          {
+            q: "En los 25 años del Colegio (2021), ¿qué modalidad combinaba clases presenciales y virtuales?",
+            options: ["Educación híbrida", "Educación por telégrafo", "Educación por radio"],
+            answer: 0,
+            fact: "Las aulas híbridas y videollamadas fueron protagonistas en 2021."
+          },
+          {
+            q: "El 25 de diciembre de 2021, año de los 25 años del Colegio, se lanzó al espacio el telescopio:",
+            options: ["Hubble", "James Webb", "Kepler"],
+            answer: 1,
+            fact: "El James Webb observa el universo profundo en luz infrarroja."
+          },
+          {
+            q: "En febrero de 2021 aterrizó en Marte el rover Perseverance acompañado por el pequeño helicóptero:",
+            options: ["Ingenuity", "Voyager", "Sputnik"],
+            answer: 0,
+            fact: "Ingenuity logró el primer vuelo controlado en otro planeta."
+          },
+          {
+            q: "En noviembre de 2021 se jugó la final de la Copa Libertadores en Montevideo, en el:",
+            options: ["Estadio Centenario", "Parque Central", "Campeón del Siglo"],
+            answer: 0,
+            fact: "Palmeiras venció a Flamengo en el Estadio Centenario."
+          },
+          {
+            q: "¿Qué película animada musical sobre la familia Madrigal se estrenó en 2021?",
+            options: ["Coco", "Encanto", "Luca"],
+            answer: 1,
+            fact: "Encanto fue un éxito musical de 2021."
+          },
+          {
+            q: "¿En qué ciudad se disputaron en 2021 los Juegos Olímpicos que habían sido postergados de 2020?",
+            options: ["París", "Tokio", "Londres"],
+            answer: 1,
+            fact: "Tokio 2020 se celebró entre julio y agosto de 2021."
+          }
+        ],
+        "2026": [
+          {
+            q: "¡Llegamos a 2026! ¿Cuántos años cumple el Colegio Paulo Freire?",
+            options: ["25 años", "30 años", "35 años"],
+            answer: 1,
+            fact: "¡1996 – 2026: 30 años aprendiendo juntos!"
+          },
+          {
+            q: "¿Cuál es el lema de este festejo de los 30 años del Colegio Paulo Freire?",
+            options: ["30 años aprendiendo juntos", "30 años sin recreo", "30 años jugando solos"],
+            answer: 0,
+            fact: "Tres décadas de estudiantes, familias y docentes aprendiendo juntos."
+          },
+          {
+            q: "Si alguien empezó 1º de escuela en 1996, ¿cuántas décadas pasaron hasta este festejo de 2026?",
+            options: ["2 décadas", "3 décadas", "4 décadas"],
+            answer: 1,
+            fact: "De 1996 a 2026 son exactamente 3 décadas de historias compartidas."
+          },
+          {
+            q: "¿Cuáles son los tres países anfitriones del Mundial de Fútbol 2026?",
+            options: ["Uruguay, Argentina y Paraguay", "Estados Unidos, México y Canadá", "España, Portugal y Marruecos"],
+            answer: 1,
+            fact: "El Mundial 2026 es el primero con 48 selecciones."
+          },
+          {
+            q: "¿Qué misión de la NASA prepara el regreso de astronautas alrededor de la Luna en esta etapa?",
+            options: ["Artemis II", "Gemini IV", "Skylab"],
+            answer: 0,
+            fact: "El programa Artemis marca la nueva era de exploración lunar."
+          },
+          {
+            q: "¿Qué tecnología actual de 2026 usamos para crear texto, código o imágenes conversando?",
+            options: ["Inteligencia Artificial generativa", "Disquete de 3 ½", "Módem telefónico"],
+            answer: 0,
+            fact: "¡De los disquetes de 1996 a la IA generativa de 2026!"
+          },
+          {
+            q: "¿Qué representa llegar al centro del tablero en 'Misión Freire 30'?",
+            options: ["Celebrar los 30 años de historia compartida del Colegio", "Volver a 1990", "Terminar el año sin estudiar"],
+            answer: 0,
+            fact: "¡Recorrimos juntos 1996–2026 para celebrar los 30 años del Colegio!"
+          }
+        ]
+      };
+
+      /* =========================================================
+         2. COORDINATES MAPPED DIRECTLY ONTO tablero.jpg (768x1024)
+         ========================================================= */
+      // 52-cell clockwise main track matching the new vertical tablero.jpg:
+      // Top-Left: Verde | Top-Right: Rojo | Bottom-Right: Azul | Bottom-Left: Amarillo
+      // [xPct, yPct, year, isSafe]
+      const MAIN_TRACK = [
+        // Left Arm top row (left -> right)
+        [6.3, 58.6, "1996", true],    // 0: Green start
+        [11.2, 58.6, "2001", false],
+        [16.1, 58.6, "2006", false],
+        [21.1, 58.6, "2011", false],
+        [26.0, 58.6, "2016", false],
+        [30.9, 58.6, "2021", false],
+        // Top Arm left col (bottom -> top)
+        [38.9, 53.4, "2026", false],
+        [38.9, 49.8, "1996", false],
+        [38.9, 46.2, "2001", false],
+        [38.9, 42.7, "2006", true],
+        [38.9, 39.1, "2011", false],
+        [38.9, 35.5, "2016", false],
+        // Top Arm mid top (Red entry arrow)
+        [50.0, 35.5, "2021", false],  // 12
+        // Top Arm right col (top -> bottom)
+        [61.1, 35.5, "1996", true],   // 13: Red start
+        [61.1, 39.1, "2001", false],
+        [61.1, 42.7, "2006", false],
+        [61.1, 46.2, "2011", false],
+        [61.1, 49.8, "2016", false],
+        [61.1, 53.4, "2021", false],
+        // Right Arm top row (left -> right)
+        [69.1, 58.6, "2026", false],
+        [74.0, 58.6, "1996", false],
+        [78.9, 58.6, "2001", false],
+        [83.9, 58.6, "2006", true],
+        [88.8, 58.6, "2011", false],
+        [93.7, 58.6, "2016", false],
+        // Right Arm mid right (Blue entry arrow)
+        [93.7, 65.4, "2021", false],  // 25
+        // Right Arm bottom row (right -> left)
+        [93.7, 72.1, "2001", true],   // 26: Blue start
+        [88.8, 72.1, "2006", false],
+        [83.9, 72.1, "2011", false],
+        [78.9, 72.1, "2016", false],
+        [74.0, 72.1, "2021", false],
+        [69.1, 72.1, "2026", false],
+        // Bottom Arm right col (top -> bottom)
+        [61.1, 77.2, "1996", false],
+        [61.1, 80.8, "2001", false],
+        [61.1, 84.3, "2006", false],
+        [61.1, 87.8, "2011", true],
+        [61.1, 91.3, "2016", false],
+        [61.1, 94.8, "2021", false],
+        // Bottom Arm mid bottom (Yellow entry arrow)
+        [50.0, 94.8, "2026", false],  // 38
+        // Bottom Arm left col (bottom -> top)
+        [38.9, 94.8, "2011", true],   // 39: Yellow start
+        [38.9, 91.3, "2016", false],
+        [38.9, 87.8, "2021", false],
+        [38.9, 84.3, "2026", false],
+        [38.9, 80.8, "1996", false],
+        [38.9, 77.2, "2001", false],
+        // Left Arm bottom row (right -> left)
+        [30.9, 72.1, "2006", false],
+        [26.0, 72.1, "2011", false],
+        [21.1, 72.1, "2016", false],
+        [16.1, 72.1, "2021", true],
+        [11.2, 72.1, "2026", false],
+        [6.3, 72.1, "1996", false],
+        // Left Arm mid left (Green entry arrow)
+        [6.3, 65.4, "2026", false]    // 51
+      ];
+
+      const TRACK_LEN = MAIN_TRACK.length; // 52
+      const MAIN_TRACK_END = 51; // 0..51 on main track, 52..56 on color stretch, 57 = center!
+      const HOME_PROGRESS = 57;
+
+      const TEAM_CONFIG = {
+        green: {
+          id: "green",
+          label: "Verde",
+          era: "Explorando el Futuro",
+          startIndex: 0,
+          stretch: [
+            [11.2, 65.4, "1996"],
+            [16.1, 65.4, "2006"],
+            [21.1, 65.4, "2016"],
+            [26.0, 65.4, "2021"],
+            [30.9, 65.4, "2026"]
+          ],
+          baseSlots: [[18.5, 43.5]],
+          homeSpot: [40.0, 65.4]
+        },
+        red: {
+          id: "red",
+          label: "Rojo",
+          era: "Recordando la Historia",
+          startIndex: 13,
+          stretch: [
+            [50.0, 39.1, "1996"],
+            [50.0, 42.7, "2001"],
+            [50.0, 46.2, "2011"],
+            [50.0, 49.8, "2021"],
+            [50.0, 53.4, "2026"]
+          ],
+          baseSlots: [[81.5, 43.5]],
+          homeSpot: [50.0, 58.0]
+        },
+        blue: {
+          id: "blue",
+          label: "Azul",
+          era: "2001–2011",
+          startIndex: 26,
+          stretch: [
+            [88.8, 65.4, "1996"],
+            [83.9, 65.4, "2001"],
+            [78.9, 65.4, "2011"],
+            [74.0, 65.4, "2021"],
+            [69.1, 65.4, "2026"]
+          ],
+          baseSlots: [[81.5, 86.0]],
+          homeSpot: [60.0, 65.4]
+        },
+        yellow: {
+          id: "yellow",
+          label: "Amarillo",
+          era: "2011–2021",
+          startIndex: 39,
+          stretch: [
+            [50.0, 91.3, "1996"],
+            [50.0, 87.8, "2006"],
+            [50.0, 84.3, "2016"],
+            [50.0, 80.8, "2021"],
+            [50.0, 77.2, "2026"]
+          ],
+          baseSlots: [[18.5, 86.0]],
+          homeSpot: [50.0, 72.5]
+        }
+      };
+
+      const TEAM_ORDER = ["green", "red", "blue", "yellow"];
+
+      /* =========================================================
+         3. AUDIO SYNTHESIZER
+         ========================================================= */
+      let soundOn = true;
+      let audioCtx = null;
+
+      function playTone(freq, duration = 0.1, type = "triangle", gainVal = 0.08) {
+        if (!soundOn) return;
+        try {
+          if (!audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new Ctx();
+          }
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (_) {}
+      }
+
+      const sfx = {
+        dice: () => { playTone(320, 0.06, "square", 0.05); setTimeout(() => playTone(460, 0.06, "square", 0.05), 60); },
+        move: () => playTone(520, 0.09, "sine", 0.08),
+        good: () => { playTone(523, 0.1, "triangle", 0.1); setTimeout(() => playTone(659, 0.1, "triangle", 0.1), 90); setTimeout(() => playTone(784, 0.2, "triangle", 0.1), 180); },
+        bad: () => { playTone(260, 0.14, "sawtooth", 0.07); setTimeout(() => playTone(185, 0.22, "sawtooth", 0.07), 130); },
+        win: () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f, 0.22, "triangle", 0.11), i * 110)); }
+      };
+
+      /* =========================================================
+         4. CONFETTI
+         ========================================================= */
+      function fireConfetti(count = 110) {
+        const canvas = document.getElementById("confetti-canvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const colors = ["#ffd13b", "#e53935", "#1e88e5", "#2e7d32", "#ffffff"];
+        const pieces = Array.from({ length: count }, () => ({
+          x: Math.random() * canvas.width,
+          y: -20 - Math.random() * 120,
+          w: 7 + Math.random() * 6,
+          h: 6 + Math.random() * 8,
+          vx: (Math.random() - 0.5) * 4,
+          vy: 3 + Math.random() * 4.5,
+          rot: Math.random() * Math.PI,
+          vr: (Math.random() - 0.5) * 0.2,
+          color: colors[Math.floor(Math.random() * colors.length)]
+        }));
+
+        let frame = 0;
+        function tick() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          pieces.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rot += p.vr;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+          });
+          frame++;
+          if (frame < 130) requestAnimationFrame(tick);
+          else ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        requestAnimationFrame(tick);
+      }
+
+      /* =========================================================
+         5. STATE & RENDERING
+         ========================================================= */
+      const tokensLayer = document.getElementById("tokens-layer");
+      const digitalDiceArea = document.getElementById("digital-dice-area");
+      const physicalDicePad = document.getElementById("physical-dice-pad");
+      const diceBox = document.getElementById("dice-box");
+      const btnRoll = document.getElementById("btn-roll");
+      const statusHint = document.getElementById("status-hint");
+      const turnBanner = document.getElementById("turn-banner");
+      const turnLabel = document.getElementById("turn-label");
+      const turnBadge = document.getElementById("turn-badge");
+      const playersListEl = document.getElementById("players-list");
+      const logBox = document.getElementById("log-box");
+
+      const triviaModal = document.getElementById("trivia-modal");
+      const triviaYearEl = document.getElementById("trivia-year");
+      const triviaQEl = document.getElementById("trivia-question");
+      const triviaOptsEl = document.getElementById("trivia-options");
+      const triviaFeedbackEl = document.getElementById("trivia-feedback");
+      const triviaContinueBtn = document.getElementById("trivia-continue");
+
+      const setupModal = document.getElementById("setup-modal");
+      const winModal = document.getElementById("win-modal");
+
+      let state = {
+        players: [],
+        turnIdx: 0,
+        tokensPerPlayer: 1,
+        exitMode: "any",
+        diceMode: "digital", // 'digital' | 'physical'
+        phase: "idle", // 'idle' | 'rolling' | 'pick_token' | 'trivia' | 'gameover'
+        diceValue: null,
+        selectableTokenIds: [],
+        usedQuestions: {},
+        pendingMove: null
+      };
+
+      function getTokenPctCoord(token) {
+        const cfg = TEAM_CONFIG[token.color];
+        if (token.progress === -1) {
+          return cfg.baseSlots[token.slotIndex];
+        }
+        if (token.progress >= 0 && token.progress <= MAIN_TRACK_END) {
+          const trackIdx = (cfg.startIndex + token.progress) % TRACK_LEN;
+          const [x, y] = MAIN_TRACK[trackIdx];
+          return [x, y];
+        }
+        if (token.progress > MAIN_TRACK_END && token.progress < HOME_PROGRESS) {
+          const [x, y] = cfg.stretch[token.progress - (MAIN_TRACK_END + 1)];
+          return [x, y];
+        }
+        return cfg.homeSpot;
+      }
+
+      function getYearAtProgress(color, progress) {
+        if (progress >= 0 && progress <= MAIN_TRACK_END) {
+          const trackIdx = (TEAM_CONFIG[color].startIndex + progress) % TRACK_LEN;
+          return MAIN_TRACK[trackIdx][2];
+        }
+        if (progress > MAIN_TRACK_END && progress < HOME_PROGRESS) {
+          return TEAM_CONFIG[color].stretch[progress - (MAIN_TRACK_END + 1)][2];
+        }
+        return "2026";
+      }
+
+      function renderTokens() {
+        tokensLayer.innerHTML = "";
+        const groups = {};
+        state.players.forEach(p => {
+          p.tokens.forEach(t => {
+            const [x, y] = getTokenPctCoord(t);
+            const key = `${x.toFixed(1)},${y.toFixed(1)}`;
+            if (!groups[key]) groups[key] = [];
+            groups[key].push({ token: t, x, y });
+          });
+        });
+
+        const offsets = [
+          [0, 0],
+          [-1.3, -1.3],
+          [1.3, 1.3],
+          [-1.3, 1.3],
+          [1.3, -1.3]
+        ];
+
+        Object.values(groups).forEach(list => {
+          list.forEach((item, i) => {
+            const { token, x, y } = item;
+            const [dx, dy] = list.length > 1 ? offsets[i % offsets.length] : [0, 0];
+            const el = document.createElement("div");
+            el.className = `token color-${token.color}`;
+            if (token.progress === HOME_PROGRESS) el.classList.add("finished");
+            if (state.selectableTokenIds.includes(token.id)) el.classList.add("selectable");
+
+            el.style.left = `${x + dx}%`;
+            el.style.top = `${y + dy}%`;
+            el.textContent = token.progress === HOME_PROGRESS ? "★" : "●";
+
+            if (state.selectableTokenIds.includes(token.id)) {
+              el.addEventListener("click", () => handleTokenPick(token.id));
+            }
+            tokensLayer.appendChild(el);
+          });
+        });
+      }
+
+      function renderHUD() {
+        const current = state.players[state.turnIdx];
+        if (!current) return;
+
+        turnBanner.className = `turn-banner theme-${current.color}`;
+        turnLabel.textContent = `Turno: ${current.name} ${current.isBot ? "🤖" : ""}`;
+        turnBadge.textContent = TEAM_CONFIG[current.color].era;
+
+        playersListEl.innerHTML = "";
+        state.players.forEach((p, idx) => {
+          const row = document.createElement("div");
+          row.className = `player-row ${idx === state.turnIdx ? "active" : ""}`;
+          const finishedCount = p.tokens.filter(t => t.progress === HOME_PROGRESS).length;
+          row.innerHTML = `
+            <span>
+              <span class="player-dot" style="background:var(--${p.color})"></span>
+              ${p.name} ${p.isBot ? "🤖" : ""}
+            </span>
+            <span>🏠 ${finishedCount}/${p.tokens.length} · ✅ ${p.correctCount} · ❌ ${p.wrongCount}</span>
+          `;
+          playersListEl.appendChild(row);
+        });
+
+        const canHumanInput = state.phase === "idle" && !current.isBot;
+        if (state.diceMode === "physical" && !current.isBot) {
+          digitalDiceArea.style.display = "none";
+          physicalDicePad.classList.add("active");
+          document.querySelectorAll(".phys-btn").forEach(b => {
+            b.disabled = !canHumanInput;
+          });
+        } else {
+          digitalDiceArea.style.display = "flex";
+          physicalDicePad.classList.remove("active");
+          btnRoll.disabled = !canHumanInput;
+        }
+      }
+
+      function addLog(msg, kind = "info") {
+        const div = document.createElement("div");
+        div.className = `log-entry ${kind}`;
+        div.textContent = msg;
+        logBox.prepend(div);
+        while (logBox.children.length > 25) {
+          logBox.removeChild(logBox.lastChild);
+        }
+      }
+
+      /* =========================================================
+         6. GAME LOGIC
+         ========================================================= */
+      function startNewGame() {
+        const tokensPerPlayer = 1;
+        const exitMode = document.getElementById("cfg-exit").value;
+        const diceMode = document.getElementById("cfg-dice-mode").value;
+
+        const players = [];
+        TEAM_ORDER.forEach(color => {
+          const type = document.getElementById(`type-${color}`).value;
+          if (type === "off") return;
+          const rawName = document.getElementById(`name-${color}`).value.trim();
+          const name = rawName || `Equipo ${TEAM_CONFIG[color].label}`;
+          const tokens = Array.from({ length: tokensPerPlayer }, (_, i) => ({
+            id: `${color}-${i}`,
+            color,
+            slotIndex: i,
+            progress: -1
+          }));
+          players.push({
+            color,
+            name,
+            isBot: type === "bot",
+            tokens,
+            correctCount: 0,
+            wrongCount: 0
+          });
+        });
+
+        if (players.length < 2) {
+          alert("Elegí al menos 2 equipos para jugar.");
+          return;
+        }
+
+        state = {
+          players,
+          turnIdx: 0,
+          tokensPerPlayer,
+          exitMode,
+          diceMode,
+          phase: "idle",
+          diceValue: null,
+          selectableTokenIds: [],
+          usedQuestions: {},
+          pendingMove: null
+        };
+
+        logBox.innerHTML = "";
+        renderDiceFace(6);
+        setupModal.classList.remove("open");
+        winModal.classList.remove("open");
+        addLog(
+          `¡Comienza Misión Freire 30! Modo de dado: ${diceMode === "physical" ? "Físico (manual)" : "Digital"}.`,
+          "info"
+        );
+        renderTokens();
+        renderHUD();
+        promptTurn();
+      }
+
+      function promptTurn() {
+        if (state.phase === "gameover") return;
+        const p = state.players[state.turnIdx];
+        state.phase = "idle";
+        state.selectableTokenIds = [];
+        renderTokens();
+        renderHUD();
+
+        if (p.isBot) {
+          statusHint.textContent = `${p.name} está por tirar el dado...`;
+          setTimeout(rollDigitalDice, 750);
+        } else if (state.diceMode === "physical") {
+          statusHint.textContent = `Turno de ${p.name}: tirá tu dado físico e ingresá el número (1–6).`;
+        } else {
+          statusHint.textContent = `Es el turno de ${p.name}. ¡Tirá el dado!`;
+        }
+      }
+
+      function getLegalMoves(player, dice) {
+        const moves = [];
+        player.tokens.forEach(t => {
+          if (t.progress === HOME_PROGRESS) return;
+          if (t.progress === -1) {
+            if (state.exitMode === "any" || dice === 6) {
+              moves.push({ token: t, targetProgress: 0 });
+            }
+          } else {
+            const rawNext = t.progress + dice;
+            if (rawNext <= HOME_PROGRESS) {
+              moves.push({ token: t, targetProgress: rawNext, bounced: 0 });
+            } else {
+              const overshoot = rawNext - HOME_PROGRESS;
+              const bouncedTarget = HOME_PROGRESS - overshoot;
+              moves.push({ token: t, targetProgress: bouncedTarget, bounced: overshoot });
+            }
+          }
+        });
+        return moves;
+      }
+
+      const DICE_PIPS = {
+        1: [0,0,0, 0,1,0, 0,0,0],
+        2: [1,0,0, 0,0,0, 0,0,1],
+        3: [1,0,0, 0,1,0, 0,0,1],
+        4: [1,0,1, 0,0,0, 1,0,1],
+        5: [1,0,1, 0,1,0, 1,0,1],
+        6: [1,0,1, 1,0,1, 1,0,1]
+      };
+
+      function renderDiceFace(val) {
+        const pattern = DICE_PIPS[val] || DICE_PIPS[1];
+        diceBox.innerHTML = `<div class="dice-face">${pattern
+          .map(on => `<span class="pip${on ? "" : " empty"}"></span>`)
+          .join("")}</div>`;
+      }
+
+      function rollDigitalDice() {
+        if (state.phase !== "idle") return;
+        state.phase = "rolling";
+        renderHUD();
+        diceBox.classList.add("rolling");
+        sfx.dice();
+
+        const p = state.players[state.turnIdx];
+        let ticks = 0;
+        const anim = setInterval(() => {
+          renderDiceFace(Math.floor(Math.random() * 6) + 1);
+          ticks++;
+          if (ticks >= 7) {
+            clearInterval(anim);
+            diceBox.classList.remove("rolling");
+            const val = Math.floor(Math.random() * 6) + 1;
+            state.diceValue = val;
+            renderDiceFace(val);
+            afterDiceRolled(p, val);
+          }
+        }, 65);
+      }
+
+      function submitPhysicalDice(val) {
+        if (state.phase !== "idle") return;
+        const p = state.players[state.turnIdx];
+        if (p.isBot) return;
+        sfx.dice();
+        state.diceValue = val;
+        afterDiceRolled(p, val);
+      }
+
+      function afterDiceRolled(player, dice) {
+        const legal = getLegalMoves(player, dice);
+        if (legal.length === 0) {
+          addLog(`${player.name} sacó ${dice}, pero no tiene jugadas disponibles.`, "info");
+          statusHint.textContent = `Sacaste ${dice} y no podés mover. Pasa el turno.`;
+          setTimeout(advanceTurn, 1000);
+          return;
+        }
+
+        if (player.isBot || legal.length === 1) {
+          const chosen = player.isBot ? pickBestBotMove(legal) : legal[0];
+          if (chosen.bounced > 0) {
+            const toEnd = HOME_PROGRESS - chosen.token.progress;
+            addLog(`↩️ ${player.name} sacó ${dice}: avanzó ${toEnd} hasta la meta y retrocedió ${chosen.bounced}.`, "info");
+            statusHint.textContent = `Sacaste ${dice}: avanzaste ${toEnd} y retrocediste ${chosen.bounced} (falta el número justo).`;
+          } else {
+            statusHint.textContent = `${player.name} sacó ${dice} y mueve su ficha.`;
+          }
+          executeTokenMove(player, chosen.token, chosen.targetProgress);
+          return;
+        }
+
+        state.phase = "pick_token";
+        state.selectableTokenIds = legal.map(m => m.token.id);
+        renderTokens();
+        renderHUD();
+        statusHint.textContent = `Sacaste ${dice}. Tocá en el tablero una de tus fichas resaltadas.`;
+      }
+
+      function pickBestBotMove(legal) {
+        const sorted = [...legal].sort((a, b) => {
+          if (b.targetProgress === HOME_PROGRESS) return 1;
+          if (a.targetProgress === HOME_PROGRESS) return -1;
+          if (a.token.progress === -1) return -1;
+          if (b.token.progress === -1) return 1;
+          return b.targetProgress - a.targetProgress;
+        });
+        return sorted[0];
+      }
+
+      function handleTokenPick(tokenId) {
+        if (state.phase !== "pick_token") return;
+        const p = state.players[state.turnIdx];
+        const token = p.tokens.find(t => t.id === tokenId);
+        if (!token) return;
+        const targetProgress = token.progress === -1 ? 0 : token.progress + state.diceValue;
+        state.selectableTokenIds = [];
+        executeTokenMove(p, token, targetProgress);
+      }
+
+      function executeTokenMove(player, token, targetProgress) {
+        const prevProgress = token.progress;
+        token.progress = targetProgress;
+        sfx.move();
+        renderTokens();
+
+        if (targetProgress === HOME_PROGRESS) {
+          addLog(`🌟 ${player.name} metió la ficha ${token.slotIndex + 1} en la meta 30 Años!`, "good");
+          sfx.good();
+          if (checkWinner(player)) return;
+          finishTurnAfterAction(player);
+          return;
+        }
+
+        const year = getYearAtProgress(player.color, targetProgress);
+        state.pendingMove = { player, token, prevProgress, targetProgress, year };
+
+        if (player.isBot) {
+          state.phase = "trivia";
+          renderHUD();
+          statusHint.textContent = `${player.name} cayó en ${year} y está respondiendo...`;
+          setTimeout(() => {
+            const botCorrect = Math.random() < 0.65;
+            resolveTriviaOutcome(botCorrect);
+          }, 850);
+        } else {
+          openTriviaModal(year, player);
+        }
+      }
+
+      function getNextQuestionForYear(year) {
+        const pool = QUESTIONS_BY_YEAR[year] || QUESTIONS_BY_YEAR["1996"];
+        if (!state.usedQuestions[year] || state.usedQuestions[year].length >= pool.length) {
+          state.usedQuestions[year] = [];
+        }
+        const availableIdx = pool
+          .map((_, i) => i)
+          .filter(i => !state.usedQuestions[year].includes(i));
+        const chosenIdx = availableIdx[Math.floor(Math.random() * availableIdx.length)];
+        state.usedQuestions[year].push(chosenIdx);
+        return pool[chosenIdx];
+      }
+
+      const YEAR_MILESTONES = {
+        "1996": "🏫 Fundación (1996): El 12 de diciembre nacía el Colegio Paulo Freire.",
+        "2001": "🎂 Primeros 5 años (2001): La comunidad del Colegio celebraba su 5º aniversario.",
+        "2006": "🎉 Primera Década (2006): El Colegio Paulo Freire festejaba sus primeros 10 años.",
+        "2011": "🌟 Rumbo a los 15 años (2011): La comunidad del Colegio se preparaba para festejar sus primeros 15 años.",
+        "2016": "🏆 Dos Décadas (2016): El Colegio Paulo Freire cumplía sus primeros 20 años.",
+        "2021": "🥈 Bodas de Plata (2021): La comunidad del Colegio celebraba sus 25 años.",
+        "2026": "🎊 ¡30 Años! (2026): Celebramos 3 décadas aprendiendo juntos (1996–2026)."
+      };
+
+      function openTriviaModal(year, player) {
+        state.phase = "trivia";
+        renderHUD();
+        const qObj = getNextQuestionForYear(year);
+        triviaYearEl.textContent = `📅 Año ${year}`;
+        document.getElementById("trivia-title").textContent = `Turno de ${player.name}`;
+        document.getElementById("trivia-milestone").textContent = YEAR_MILESTONES[year] || "";
+        triviaQEl.textContent = qObj.q;
+        triviaFeedbackEl.className = "trivia-feedback";
+        triviaFeedbackEl.textContent = "";
+        triviaContinueBtn.style.display = "none";
+
+        triviaOptsEl.innerHTML = "";
+        qObj.options.forEach((optText, idx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "option-btn";
+          btn.textContent = optText;
+          btn.addEventListener("click", () => {
+            const buttons = triviaOptsEl.querySelectorAll(".option-btn");
+            buttons.forEach(b => (b.disabled = true));
+            const isCorrect = idx === qObj.answer;
+            btn.classList.add(isCorrect ? "correct" : "wrong");
+            if (!isCorrect) {
+              buttons[qObj.answer].classList.add("correct");
+            }
+            if (isCorrect) {
+              sfx.good();
+              triviaFeedbackEl.className = "trivia-feedback show good";
+              triviaFeedbackEl.textContent = `✅ ¡Correcto! Tu ficha se mantiene en el casillero ${year}. ${qObj.fact}`;
+            } else {
+              sfx.bad();
+              triviaFeedbackEl.className = "trivia-feedback show bad";
+              triviaFeedbackEl.textContent = `❌ ¡Respuesta incorrecta! Tu ficha vuelve atrás. ${qObj.fact}`;
+            }
+            triviaContinueBtn.style.display = "block";
+            triviaContinueBtn.onclick = () => {
+              triviaModal.classList.remove("open");
+              resolveTriviaOutcome(isCorrect);
+            };
+          });
+          triviaOptsEl.appendChild(btn);
+        });
+
+        triviaModal.classList.add("open");
+      }
+
+      function resolveTriviaOutcome(isCorrect) {
+        const { player, token, prevProgress, targetProgress, year } = state.pendingMove;
+        state.pendingMove = null;
+
+        if (isCorrect) {
+          player.correctCount++;
+          addLog(`✅ ${player.name} acertó en ${year} y se mantiene en el casillero.`, "good");
+          if (targetProgress >= 0 && targetProgress <= MAIN_TRACK_END) {
+            const landingTrackIdx = (TEAM_CONFIG[player.color].startIndex + targetProgress) % TRACK_LEN;
+            const isSafe = MAIN_TRACK[landingTrackIdx][3];
+            if (!isSafe) {
+              state.players.forEach(other => {
+                if (other.color === player.color) return;
+                other.tokens.forEach(ot => {
+                  if (ot.progress >= 0 && ot.progress <= MAIN_TRACK_END) {
+                    const otherIdx = (TEAM_CONFIG[other.color].startIndex + ot.progress) % TRACK_LEN;
+                    if (otherIdx === landingTrackIdx) {
+                      ot.progress = -1;
+                      addLog(`💥 ¡${player.name} mandó a la base a una ficha de ${other.name}!`, "good");
+                    }
+                  }
+                });
+              });
+            }
+          }
+          renderTokens();
+          finishTurnAfterAction(player);
+        } else {
+          player.wrongCount++;
+          token.progress = prevProgress;
+          sfx.move();
+          renderTokens();
+          const where = prevProgress === -1 ? "la base" : "su casillero anterior";
+          addLog(`❌ ${player.name} falló en ${year} y volvió a ${where}.`, "bad");
+          finishTurnAfterAction(player);
+        }
+      }
+
+      function finishTurnAfterAction(player) {
+        if (state.phase === "gameover") return;
+        if (state.diceValue === 6) {
+          addLog(`🎲 ¡${player.name} sacó 6 y vuelve a tirar!`, "info");
+          promptTurn();
+        } else {
+          advanceTurn();
+        }
+      }
+
+      function advanceTurn() {
+        state.turnIdx = (state.turnIdx + 1) % state.players.length;
+        promptTurn();
+      }
+
+      let lastWinner = null;
+
+      function checkWinner(player) {
+        const allHome = player.tokens.every(t => t.progress === HOME_PROGRESS);
+        if (!allHome) return false;
+        state.phase = "gameover";
+        lastWinner = player;
+        renderHUD();
+        sfx.win();
+        fireConfetti(140);
+        document.getElementById("win-team-name").textContent = `¡${player.name} ganó Misión Freire 30!`;
+        document.getElementById("win-stats-pills").innerHTML = `
+          <span class="stat-badge ok">✅ Correctas: ${player.correctCount}</span>
+          <span class="stat-badge bad">❌ Incorrectas: ${player.wrongCount}</span>
+        `;
+        document.getElementById("win-stats").textContent =
+          `¡Completaron el recorrido por los 30 años del Colegio Paulo Freire!`;
+        winModal.classList.add("open");
+        return true;
+      }
+
+      /* =========================================================
+         7. FAMILY REGISTER, CAMERA & ALBUM (OPTIONAL)
+         ========================================================= */
+      const ALBUM_KEY = "pf_ludo_album_v1";
+      const registerModal = document.getElementById("register-modal");
+      const albumModal = document.getElementById("album-modal");
+      const camVideo = document.getElementById("camera-video");
+      const photoPreview = document.getElementById("photo-preview");
+      const camPlaceholder = document.getElementById("camera-placeholder");
+      const btnStartCam = document.getElementById("btn-start-cam");
+      const btnTakePhoto = document.getElementById("btn-take-photo");
+      const regFileInput = document.getElementById("reg-file-input");
+
+      let camStream = null;
+      let capturedPhotoData = null;
+
+      function stopCamera() {
+        if (camStream) {
+          camStream.getTracks().forEach(t => t.stop());
+          camStream = null;
+        }
+        camVideo.style.display = "none";
+        btnTakePhoto.style.display = "none";
+        btnStartCam.style.display = "inline-block";
+      }
+
+      function loadAlbum() {
+        try {
+          return JSON.parse(localStorage.getItem(ALBUM_KEY) || "[]");
+        } catch (_) {
+          return [];
+        }
+      }
+
+      function saveAlbum(items) {
+        try {
+          localStorage.setItem(ALBUM_KEY, JSON.stringify(items));
+        } catch (_) {
+          alert("El álbum está lleno en este navegador. Podés vaciar recuerdos anteriores si necesitás espacio.");
+        }
+      }
+
+      function renderAlbum() {
+        const listEl = document.getElementById("album-list");
+        const items = loadAlbum();
+        if (items.length === 0) {
+          listEl.innerHTML = `<p style="text-align:center; font-size:0.88rem; color:#64748b; padding:16px 0;">Todavía no hay familias registradas. ¡Al ganar una partida podés sacarte una foto de recuerdo!</p>`;
+          return;
+        }
+        listEl.innerHTML = "";
+        items.forEach(item => {
+          const card = document.createElement("div");
+          card.className = "album-card";
+
+          if (item.photo) {
+            const img = document.createElement("img");
+            img.src = item.photo;
+            img.className = "album-thumb";
+            img.alt = item.family;
+            card.appendChild(img);
+          } else {
+            const ph = document.createElement("div");
+            ph.className = "album-thumb";
+            ph.textContent = "🎓";
+            card.appendChild(ph);
+          }
+
+          const info = document.createElement("div");
+          info.style.cssText = "flex:1; min-width:0;";
+
+          const title = document.createElement("div");
+          title.style.cssText = "font-weight:900; font-size:0.95rem; color:#0f172a;";
+          title.textContent = item.family;
+
+          const sub = document.createElement("div");
+          sub.style.cssText = "font-size:0.76rem; font-weight:700; color:#475569;";
+          sub.textContent = `${item.team} · ${item.date}`;
+
+          const stats = document.createElement("div");
+          stats.style.cssText = "font-size:0.8rem; font-weight:800; margin-top:3px;";
+          stats.innerHTML = `<span style="color:#15803d;">✅ ${Number(item.correct) || 0} bien</span> · <span style="color:#b91c1c;">❌ ${Number(item.wrong) || 0} mal</span>`;
+
+          info.append(title, sub, stats);
+          card.appendChild(info);
+          listEl.appendChild(card);
+        });
+      }
+
+      document.getElementById("btn-open-register").addEventListener("click", () => {
+        if (!lastWinner) return;
+        capturedPhotoData = null;
+        photoPreview.style.display = "none";
+        camPlaceholder.style.display = "block";
+        document.getElementById("reg-family-name").value = "";
+        document.getElementById("reg-stats-pills").innerHTML = `
+          <span class="stat-badge ok">✅ Correctas: ${lastWinner.correctCount}</span>
+          <span class="stat-badge bad">❌ Incorrectas: ${lastWinner.wrongCount}</span>
+        `;
+        winModal.classList.remove("open");
+        registerModal.classList.add("open");
+      });
+
+      btnStartCam.addEventListener("click", async () => {
+        try {
+          camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+          camVideo.srcObject = camStream;
+          camVideo.style.display = "block";
+          photoPreview.style.display = "none";
+          camPlaceholder.style.display = "none";
+          btnStartCam.style.display = "none";
+          btnTakePhoto.style.display = "inline-block";
+        } catch (_) {
+          alert("No se pudo acceder a la cámara. Podés usar el botón '🖼️ Elegir / Sacar Foto'.");
+        }
+      });
+
+      btnTakePhoto.addEventListener("click", () => {
+        if (!camVideo.videoWidth) return;
+        const canvas = document.createElement("canvas");
+        const maxW = 480;
+        const scale = Math.min(1, maxW / camVideo.videoWidth);
+        canvas.width = Math.round(camVideo.videoWidth * scale);
+        canvas.height = Math.round(camVideo.videoHeight * scale);
+        canvas.getContext("2d").drawImage(camVideo, 0, 0, canvas.width, canvas.height);
+        capturedPhotoData = canvas.toDataURL("image/jpeg", 0.78);
+        photoPreview.src = capturedPhotoData;
+        photoPreview.style.display = "block";
+        stopCamera();
+      });
+
+      regFileInput.addEventListener("change", (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const maxW = 480;
+            const scale = Math.min(1, maxW / img.width);
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+            capturedPhotoData = canvas.toDataURL("image/jpeg", 0.78);
+            photoPreview.src = capturedPhotoData;
+            photoPreview.style.display = "block";
+            camPlaceholder.style.display = "none";
+            stopCamera();
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById("btn-save-register").addEventListener("click", () => {
+        if (!lastWinner) return;
+        const family = document.getElementById("reg-family-name").value.trim() || lastWinner.name;
+        const items = loadAlbum();
+        items.unshift({
+          family,
+          team: lastWinner.name,
+          correct: lastWinner.correctCount,
+          wrong: lastWinner.wrongCount,
+          photo: capturedPhotoData,
+          date: new Date().toLocaleTimeString("es-UY", { hour: "2-digit", minute: "2-digit" })
+        });
+        saveAlbum(items);
+        stopCamera();
+        registerModal.classList.remove("open");
+        renderAlbum();
+        albumModal.classList.add("open");
+      });
+
+      document.getElementById("btn-cancel-register").addEventListener("click", () => {
+        stopCamera();
+        registerModal.classList.remove("open");
+        winModal.classList.add("open");
+      });
+
+      document.getElementById("btn-album").addEventListener("click", () => {
+        renderAlbum();
+        albumModal.classList.add("open");
+      });
+
+      document.getElementById("btn-close-album").addEventListener("click", () => {
+        albumModal.classList.remove("open");
+      });
+
+      document.getElementById("btn-clear-album").addEventListener("click", () => {
+        if (confirm("¿Seguro que querés borrar todos los recuerdos guardados en este dispositivo?")) {
+          localStorage.removeItem(ALBUM_KEY);
+          renderAlbum();
+        }
+      });
+
+      /* =========================================================
+         8. EVENTS
+         ========================================================= */
+      btnRoll.addEventListener("click", rollDigitalDice);
+
+      document.querySelectorAll(".phys-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const val = parseInt(btn.dataset.val, 10);
+          submitPhysicalDice(val);
+        });
+      });
+
+      document.getElementById("btn-start-game").addEventListener("click", startNewGame);
+      document.getElementById("btn-new-game").addEventListener("click", () => {
+        setupModal.classList.add("open");
+      });
+      document.getElementById("btn-play-again").addEventListener("click", () => {
+        winModal.classList.remove("open");
+        setupModal.classList.add("open");
+      });
+
+      document.getElementById("btn-sound").addEventListener("click", (e) => {
+        soundOn = !soundOn;
+        e.currentTarget.textContent = soundOn ? "🔊 Sonido: ON" : "🔇 Sonido: OFF";
+      });
+    })();
+  </script>
+</body>
+</html>

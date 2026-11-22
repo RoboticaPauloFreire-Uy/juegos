@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#008080" />
+  <title>Escape Room 1996 | Colegio Paulo Freire — 30 Años</title>
+  <style>
+    :root {
+      --win-teal: #008080;
+      --win-teal-dark: #005757;
+      --win-gray: #C0C0C0;
+      --win-gray-light: #DFDFDF;
+      --win-gray-dark: #808080;
+      --win-black: #111111;
+      --win-blue: #000080;
+      --win-blue-grad: #1084D0;
+      --crt-bg: #071A12;
+      --crt-green: #33FF88;
+      --crt-amber: #FFD13B;
+      --crt-red: #FF4D6A;
+      --gold: #FFD13B;
+      --mint: #2CE5A7;
+      --font-sans: system-ui, -apple-system, "Segoe UI", Tahoma, Arial, sans-serif;
+      --font-mono: ui-monospace, "Cascadia Mono", "Consolas", "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: var(--font-sans);
+      background: linear-gradient(160deg, #006666 0%, var(--win-teal) 45%, #004747 100%);
+      color: var(--win-black);
+      line-height: 1.4;
+      overflow-x: hidden;
+    }
+
+    /* Subtle CRT scanline texture over desktop */
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 2px,
+        rgba(0, 0, 0, 0.05) 3px,
+        rgba(0, 0, 0, 0.05) 4px
+      );
+      z-index: 40;
+    }
+
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 60;
+    }
+
+    /* App Container */
+    .desktop-shell {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 500px;
+      min-height: 100dvh;
+      margin: 0 auto;
+      padding: 10px 10px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* Classic Win95 Beveled Window */
+    .win-window {
+      background: var(--win-gray);
+      border-top: 2px solid #FFFFFF;
+      border-left: 2px solid #FFFFFF;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      box-shadow: 4px 6px 0 rgba(0, 0, 0, 0.32);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .win-titlebar {
+      background: linear-gradient(90deg, var(--win-blue), var(--win-blue-grad));
+      color: #FFFFFF;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 0.9rem;
+      letter-spacing: 0.01em;
+      user-select: none;
+    }
+
+    .win-title-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .win-controls {
+      display: flex;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .win-ctrl-btn {
+      width: 20px;
+      height: 18px;
+      background: var(--win-gray);
+      color: #000000;
+      border-top: 1.5px solid #FFFFFF;
+      border-left: 1.5px solid #FFFFFF;
+      border-right: 1.5px solid #404040;
+      border-bottom: 1.5px solid #404040;
+      font-size: 11px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .win-body {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .win-inset {
+      background: #FFFFFF;
+      border-top: 2px solid #808080;
+      border-left: 2px solid #808080;
+      border-right: 2px solid #FFFFFF;
+      border-bottom: 2px solid #FFFFFF;
+      padding: 12px;
+    }
+
+    .win-btn {
+      min-height: 46px;
+      padding: 10px 14px;
+      background: var(--win-gray);
+      color: #000000;
+      font-family: inherit;
+      font-size: 0.96rem;
+      font-weight: 800;
+      border-top: 2px solid #FFFFFF;
+      border-left: 2px solid #FFFFFF;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.06s ease;
+    }
+
+    .win-btn:active:not(:disabled) {
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #FFFFFF;
+      border-bottom: 2px solid #FFFFFF;
+      transform: translate(1px, 1px);
+    }
+
+    .win-btn:disabled {
+      color: #707070;
+      cursor: not-allowed;
+    }
+
+    .win-btn-primary {
+      background: linear-gradient(180deg, #FFE066 0%, var(--gold) 100%);
+      color: #09183D;
+      font-size: 1.02rem;
+    }
+
+    .win-btn-mint {
+      background: linear-gradient(180deg, #52F7C1 0%, var(--mint) 100%);
+      color: #04291D;
+    }
+
+    .win-btn-danger {
+      background: linear-gradient(180deg, #FF6B81 0%, #E03651 100%);
+      color: #FFFFFF;
+    }
+
+    /* Screens */
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      animation: winOpen 0.2s ease-out;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    @keyframes winOpen {
+      from { opacity: 0; transform: scale(0.97); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* Forms */
+    .field-label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 800;
+      margin-bottom: 5px;
+      color: #111;
+    }
+
+    .win-input, .win-select {
+      width: 100%;
+      min-height: 46px;
+      padding: 8px 10px;
+      font-size: 1rem;
+      font-family: inherit;
+      font-weight: 600;
+      background: #FFFFFF;
+      color: #000000;
+      border-top: 2px solid #808080;
+      border-left: 2px solid #808080;
+      border-right: 2px solid #DFDFDF;
+      border-bottom: 2px solid #DFDFDF;
+    }
+
+    .win-input:focus, .win-select:focus {
+      outline: 2px solid var(--win-blue);
+    }
+
+    .error-banner {
+      display: none;
+      background: #FFE5E9;
+      border: 2px solid #CC1F3A;
+      color: #8F0D22;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+      font-weight: 800;
+    }
+
+    .error-banner.visible {
+      display: block;
+    }
+
+    /* CRT Terminal Box */
+    .crt-box {
+      background: var(--crt-bg);
+      color: var(--crt-green);
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      padding: 12px;
+      border-top: 3px solid #222;
+      border-left: 3px solid #222;
+      border-right: 3px solid #666;
+      border-bottom: 3px solid #666;
+      border-radius: 4px;
+      box-shadow: inset 0 0 18px rgba(51, 255, 136, 0.14);
+      line-height: 1.45;
+    }
+
+    .crt-amber {
+      color: var(--crt-amber);
+    }
+
+    .crt-blink {
+      animation: blink 1s steps(2, start) infinite;
+    }
+
+    @keyframes blink {
+      to { visibility: hidden; }
+    }
+
+    /* Room Progress Strip */
+    .rooms-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .room-pill {
+      background: var(--win-gray);
+      border-top: 2px solid #FFFFFF;
+      border-left: 2px solid #FFFFFF;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      padding: 7px 4px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .room-pill.active {
+      background: #FFF3B0;
+      outline: 2px solid var(--win-blue);
+    }
+
+    .room-pill.solved {
+      background: #C8FCE9;
+      color: #055A3E;
+    }
+
+    .room-pill.locked {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Sticky Post-it Note */
+    .postit {
+      background: #FFF59D;
+      color: #2B2400;
+      padding: 12px;
+      border-bottom: 3px solid #D4C34A;
+      border-right: 2px solid #E6D765;
+      box-shadow: 2px 3px 6px rgba(0,0,0,0.2);
+      font-size: 0.9rem;
+      font-weight: 700;
+      transform: rotate(-0.6deg);
+    }
+
+    /* ROOM 1: Floppy Disk & 1996 Calendar */
+    .floppy-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .floppy-disk {
+      width: 210px;
+      height: 215px;
+      background: #1B3B8B;
+      border-radius: 8px 8px 8px 18px;
+      border: 3px solid #0C1F52;
+      position: relative;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.35);
+    }
+
+    .floppy-shutter {
+      width: 118px;
+      height: 62px;
+      background: linear-gradient(135deg, #E2E6ED, #9CA6B8);
+      border: 2px solid #596375;
+      border-radius: 3px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .floppy-shutter::after {
+      content: "";
+      position: absolute;
+      right: 14px;
+      top: 8px;
+      width: 24px;
+      height: 42px;
+      background: #1B3B8B;
+      border: 1.5px solid #596375;
+    }
+
+    .floppy-label {
+      background: #FFFDF7;
+      border: 1.5px solid #CCC;
+      border-top: 6px solid var(--gold);
+      border-radius: 3px;
+      padding: 8px;
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: #111;
+      font-weight: 800;
+    }
+
+    .write-protect-btn {
+      position: absolute;
+      bottom: 14px;
+      right: 12px;
+      background: #0F172A;
+      color: #FFF;
+      border: 2px solid #94A3B8;
+      border-radius: 4px;
+      padding: 4px 7px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .write-protect-btn.unlocked {
+      background: #059669;
+      border-color: #6EE7B7;
+    }
+
+    /* Mini Calendar Dec 1996 */
+    .cal-box {
+      background: #FFFFFF;
+      border: 2px solid #222;
+      padding: 8px;
+    }
+
+    .cal-header {
+      background: #B91C1C;
+      color: #FFFFFF;
+      text-align: center;
+      font-weight: 900;
+      font-size: 0.82rem;
+      padding: 4px;
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 3px;
+      text-align: center;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .cal-day-head {
+      color: #64748B;
+      font-size: 0.7rem;
+    }
+
+    .cal-cell {
+      padding: 4px 2px;
+      border-radius: 4px;
+    }
+
+    .cal-cell.mark-ballot {
+      background: #DBEAFE;
+      border: 1.5px solid #2563EB;
+      color: #1E3A8A;
+      font-weight: 900;
+    }
+
+    .cal-cell.mark-freire {
+      background: #FEE2E2;
+      border: 2px solid #DC2626;
+      color: #991B1B;
+      font-weight: 900;
+      border-radius: 999px;
+    }
+
+    /* Keypad */
+    .keypad-display {
+      background: #071A12;
+      color: var(--crt-green);
+      font-family: var(--font-mono);
+      font-size: 1.65rem;
+      font-weight: 900;
+      letter-spacing: 0.35em;
+      text-align: center;
+      padding: 10px;
+      border: 2px solid #333;
+      margin-bottom: 8px;
+    }
+
+    .keypad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+    }
+
+    .key-btn {
+      min-height: 46px;
+      font-size: 1.15rem;
+      font-weight: 900;
+    }
+
+    /* ROOM 2: Modem & Word Tiles */
+    .switch-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .device-toggle {
+      padding: 10px;
+      border: 2px solid #404040;
+      background: #E5E7EB;
+      text-align: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .device-toggle.on {
+      background: #DCFCE7;
+      border-color: #16A34A;
+      color: #14532D;
+    }
+
+    .device-toggle.off {
+      background: #FEE2E2;
+      border-color: #DC2626;
+      color: #7F1D1D;
+    }
+
+    .dos-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .dos-chip {
+      background: #1E293B;
+      color: var(--crt-green);
+      border: 1.5px solid var(--crt-green);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 8px 10px;
+      cursor: pointer;
+    }
+
+    .word-slots {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 5px;
+      margin: 8px 0;
+    }
+
+    .letter-slot {
+      width: 30px;
+      height: 38px;
+      background: #071A12;
+      color: var(--crt-amber);
+      border: 2px solid #33FF88;
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .letter-bank {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .tile-btn {
+      width: 38px;
+      height: 42px;
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 900;
+      padding: 0;
+    }
+
+    .tile-btn.used {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    /* ROOM 3: 4x4 Deep Blue Chess */
+    .chess-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      width: 100%;
+      max-width: 280px;
+      margin: 4px auto;
+      border: 4px solid #1E293B;
+    }
+
+    .chess-cell {
+      aspect-ratio: 1 / 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      cursor: pointer;
+      user-select: none;
+      border: none;
+      transition: background-color 0.15s;
+    }
+
+    .chess-cell.light { background: #F8FAFC; }
+    .chess-cell.dark { background: #64748B; color: #FFFFFF; }
+    .chess-cell.selected { outline: 4px solid var(--gold); outline-offset: -4px; background: #FEF08A; }
+    .chess-cell.target-hint { box-shadow: inset 0 0 0 3px #10B981; }
+
+    /* ROOM 4: Vault Dials */
+    .dial-card {
+      background: #F8FAFC;
+      border: 2px solid #94A3B8;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .dial-title {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: #0F172A;
+    }
+
+    .dial-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .dial-opt {
+      min-height: 42px;
+      padding: 6px 4px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      background: #E2E8F0;
+      border: 2px solid #94A3B8;
+      color: #0F172A;
+      cursor: pointer;
+    }
+
+    .dial-opt.picked {
+      background: var(--win-blue);
+      color: #FFFFFF;
+      border-color: var(--gold);
+    }
+
+    /* Hint Bar */
+    .hint-box {
+      background: #EFF6FF;
+      border: 2px dashed #2563EB;
+      padding: 10px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #1E3A8A;
+      display: none;
+    }
+
+    .hint-box.visible {
+      display: block;
+    }
+
+    .room-feedback {
+      padding: 10px 12px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      display: none;
+    }
+
+    .room-feedback.ok {
+      display: block;
+      background: #D1FAE5;
+      border: 2px solid #059669;
+      color: #064E3B;
+    }
+
+    .room-feedback.err {
+      display: block;
+      background: #FFE4E6;
+      border: 2px solid #E11D48;
+      color: #881337;
+    }
+
+    /* Bottom Win95 Taskbar */
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 44px;
+      background: var(--win-gray);
+      border-top: 2px solid #FFFFFF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 8px;
+      z-index: 45;
+      gap: 8px;
+    }
+
+    .start-btn {
+      height: 32px;
+      padding: 0 10px;
+      background: var(--win-gray);
+      border-top: 2px solid #FFFFFF;
+      border-left: 2px solid #FFFFFF;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      font-weight: 900;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .taskbar-tray {
+      height: 32px;
+      background: var(--win-gray-light);
+      border-top: 1.5px solid #808080;
+      border-left: 1.5px solid #808080;
+      border-right: 1.5px solid #FFFFFF;
+      border-bottom: 1.5px solid #FFFFFF;
+      padding: 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .mute-btn {
+      background: none;
+      border: none;
+      font-size: 1rem;
+      cursor: pointer;
+      padding: 2px;
+    }
+
+    /* Victory Credential */
+    .diploma-card {
+      background: linear-gradient(170deg, #FFFFFF 0%, #F1F5FF 100%);
+      border: 4px double var(--win-blue);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .diploma-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .stat-box {
+      background: #0B1F4D;
+      color: #FFFFFF;
+      padding: 10px 8px;
+      border-radius: 6px;
+    }
+
+    .stat-val {
+      font-family: var(--font-mono);
+      font-size: 1.3rem;
+      font-weight: 900;
+      color: var(--gold);
+    }
+
+    .stat-lbl {
+      font-size: 0.75rem;
+      color: #CBD5E1;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+  <main class="desktop-shell">
+    <!-- PANTALLA 1: LOGIN FREIRE-96 -->
+    <section id="screen-login" class="screen active">
+      <div class="win-window">
+        <div class="win-titlebar">
+          <div class="win-title-left">🖥️ FREIRE-96.EXE — Escape Room</div>
+          <div class="win-controls">
+            <span class="win-ctrl-btn">?</span>
+            <span class="win-ctrl-btn">✕</span>
+          </div>
+        </div>
+        <div class="win-body">
+          <div class="crt-box">
+            <div>&gt; FECHA DEL SISTEMA: <span class="crt-amber">12/12/1996</span></div>
+            <div>&gt; ESTADO: <span class="crt-amber">SALA DE COMPUTACIÓN BLOQUEADA</span></div>
+            <div>&gt; MISIÓN: Hoy nace el Colegio Paulo Freire. Resuelvan los 4 candados de 1996 en equipo (Adulto + Estudiante) para abrir la cápsula del tiempo.<span class="crt-blink">_</span></div>
+          </div>
+
+          <form id="login-form" class="win-inset" novalidate>
+            <div style="margin-bottom: 12px;">
+              <label class="field-label" for="team-name">Nombre del Equipo</label>
+              <input id="team-name" class="win-input" type="text" maxlength="38" placeholder="Ej: Los Hackers del 96 / Familia Gómez" autocomplete="off" />
+            </div>
+
+            <div style="margin-bottom: 12px;">
+              <label class="field-label" for="team-class">Clase / Nivel</label>
+              <select id="team-class" class="win-select">
+                <option value="Nivel 5 años">Nivel 5 años</option>
+                <option value="1º Año">1º Año</option>
+                <option value="2º Año">2º Año</option>
+                <option value="3º Año">3º Año</option>
+                <option value="4º Año">4º Año</option>
+                <option value="5º Año">5º Año</option>
+                <option value="6º Año">6º Año</option>
+                <option value="Exalumno / Familia">Exalumno / Familia</option>
+              </select>
+            </div>
+
+            <div id="login-error" class="error-banner" style="margin-bottom: 10px;">
+              Escribí el nombre del equipo para iniciar sesión en 1996.
+            </div>
+
+            <button type="submit" class="win-btn win-btn-primary" style="width: 100%;">
+              🔑 INICIAR MISIÓN 1996
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA JUEGO: ESCRITORIO DE 4 SALAS -->
+    <section id="screen-game" class="screen">
+      <!-- Barra de progreso de las 4 salas -->
+      <div class="rooms-strip" id="rooms-strip"></div>
+
+      <!-- SALA 1: DISQUETE + CALENDARIO 1996 -->
+      <div id="room-1" class="win-window room-panel">
+        <div class="win-titlebar">
+          <div class="win-title-left">💾 Candado 1/4: El Disquete Protegido</div>
+          <div class="win-controls"><span class="win-ctrl-btn">_</span></div>
+        </div>
+        <div class="win-body">
+          <div class="postit">
+            📌 Nota pegada al monitor:<br />
+            "1) Quitá el seguro físico del disquete.<br />
+            2) La clave de 4 dígitos es: <strong>[Día que nace el Colegio] + [Mes del balotaje en Uruguay]</strong>."
+          </div>
+
+          <div class="floppy-wrapper">
+            <div class="floppy-disk">
+              <div class="floppy-shutter"></div>
+              <div class="floppy-label">
+                COLEGIO PAULO FREIRE<br />
+                ACTA_1996.DOC (1.44 MB)<br />
+                <span id="floppy-lock-status" style="color:#B91C1C;">🔒 PROTEGIDO</span>
+              </div>
+              <button type="button" id="btn-write-protect" class="write-protect-btn">
+                SEGURO: ON (Tocar)
+              </button>
+            </div>
+          </div>
+
+          <div class="cal-box">
+            <div class="cal-header">📅 DICIEMBRE 1996 — URUGUAY</div>
+            <div class="cal-grid">
+              <div class="cal-day-head">D</div><div class="cal-day-head">L</div><div class="cal-day-head">M</div><div class="cal-day-head">M</div><div class="cal-day-head">J</div><div class="cal-day-head">V</div><div class="cal-day-head">S</div>
+              <div class="cal-cell">1</div><div class="cal-cell">2</div><div class="cal-cell">3</div><div class="cal-cell">4</div><div class="cal-cell">5</div><div class="cal-cell">6</div><div class="cal-cell">7</div>
+              <div class="cal-cell mark-ballot" title="Reforma Balotaje">8🗳️</div><div class="cal-cell">9</div><div class="cal-cell">10</div><div class="cal-cell">11</div><div class="cal-cell mark-freire" title="Nace Paulo Freire">12🏫</div><div class="cal-cell">13</div><div class="cal-cell">14</div>
+            </div>
+            <div style="font-size:0.74rem; margin-top:6px; font-weight:700; color:#334155;">
+              8🗳️ Votación Reforma Balotaje • 12🏫 Fundación Paulo Freire
+            </div>
+          </div>
+
+          <div>
+            <div class="keypad-display" id="r1-display">----</div>
+            <div class="keypad-grid" id="r1-keypad"></div>
+          </div>
+
+          <div id="r1-feedback" class="room-feedback"></div>
+          <button type="button" class="win-btn" id="r1-hint-btn">💡 Pedir Pista</button>
+          <div id="r1-hint-box" class="hint-box"></div>
+        </div>
+      </div>
+
+      <!-- SALA 2: MÓDEM 33.6K + TERMINAL MS-DOS + TAMAGOTCHI -->
+      <div id="room-2" class="win-window room-panel" style="display:none;">
+        <div class="win-titlebar">
+          <div class="win-title-left">📞 Candado 2/4: Módem 33.6K & MS-DOS</div>
+          <div class="win-controls"><span class="win-ctrl-btn">_</span></div>
+        </div>
+        <div class="win-body">
+          <div class="win-inset" style="font-size:0.88rem; font-weight:700;">
+            En 1996 Internet usaba la línea del teléfono fijo. ¡Si alguien habla por teléfono, el módem no conecta!
+          </div>
+
+          <div class="switch-row">
+            <button type="button" id="toggle-phone" class="device-toggle on">☎️ Teléfono: CONECTADO</button>
+            <button type="button" id="toggle-modem" class="device-toggle off">📠 Módem 33.6K: APAGADO</button>
+          </div>
+
+          <div class="crt-box" id="dos-screen">
+            <div>C:\FREIRE96&gt; Esperando conexión telefónica libre...</div>
+          </div>
+
+          <div class="dos-actions">
+            <button type="button" class="dos-chip" id="dos-dir">DIR</button>
+            <button type="button" class="dos-chip" id="dos-readme">TYPE LEEME.TXT</button>
+          </div>
+
+          <div id="r2-puzzle-area" class="win-inset" style="display:none;">
+            <div style="font-size:0.88rem; font-weight:800; margin-bottom:6px;">
+              🥚 Clave de <code>CAPSULA.ZIP</code>: Mascota virtual con forma de huevo furor en 1996 (10 letras):
+            </div>
+            <div class="word-slots" id="r2-slots"></div>
+            <div class="letter-bank" id="r2-bank"></div>
+            <div style="display:flex; gap:8px; margin-top:10px;">
+              <button type="button" class="win-btn" id="r2-clear" style="flex:1;">⌫ Borrar</button>
+              <button type="button" class="win-btn win-btn-primary" id="r2-submit" style="flex:2;">DESCOMPRIMIR</button>
+            </div>
+          </div>
+
+          <div id="r2-feedback" class="room-feedback"></div>
+          <button type="button" class="win-btn" id="r2-hint-btn">💡 Pedir Pista</button>
+          <div id="r2-hint-box" class="hint-box"></div>
+        </div>
+      </div>
+
+      <!-- SALA 3: DUELO DEEP BLUE 1996 -->
+      <div id="room-3" class="win-window room-panel" style="display:none;">
+        <div class="win-titlebar">
+          <div class="win-title-left">♟️ Candado 3/4: Duelo Deep Blue (1996)</div>
+          <div class="win-controls"><span class="win-ctrl-btn">_</span></div>
+        </div>
+        <div class="win-body">
+          <div class="win-inset" style="font-size:0.88rem; font-weight:700;">
+            En 1996 la supercomputadora <strong>Deep Blue</strong> venció al campeón mundial Garry Kasparov. ¡Ahora te desafía a vos!<br />
+            <strong>Objetivo:</strong> Tocá la <strong>Torre Blanca (♖)</strong> y movela en línea recta para capturar al <strong>Rey Negro (♚)</strong> en 1 jugada.
+          </div>
+
+          <div class="chess-board" id="chess-board"></div>
+
+          <div id="r3-feedback" class="room-feedback"></div>
+          <button type="button" class="win-btn" id="r3-hint-btn">💡 Pedir Pista</button>
+          <div id="r3-hint-box" class="hint-box"></div>
+        </div>
+      </div>
+
+      <!-- SALA 4: BÓVEDA DEL SOJOURNER & PAULO FREIRE -->
+      <div id="room-4" class="win-window room-panel" style="display:none;">
+        <div class="win-titlebar">
+          <div class="win-title-left">🔐 Candado 4/4: Bóveda Final 1996</div>
+          <div class="win-controls"><span class="win-ctrl-btn">_</span></div>
+        </div>
+        <div class="win-body">
+          <div class="crt-box">
+            <div>&gt; CALIBRACIÓN FINAL DE LA CÁPSULA</div>
+            <div>&gt; Ajustá los 3 diales históricos de 1996 para abrir la puerta de salida.</div>
+          </div>
+
+          <div class="dial-card">
+            <div class="dial-title">1. 🛸 Robot Sojourner (lanzado a Marte en dic. 1996): ¿a qué velocidad máxima se movía?</div>
+            <div class="dial-options" data-dial="0">
+              <button type="button" class="dial-opt" data-val="1cm">1 cm/seg</button>
+              <button type="button" class="dial-opt" data-val="50km">50 km/h</button>
+              <button type="button" class="dial-opt" data-val="300km">300 km/h</button>
+            </div>
+          </div>
+
+          <div class="dial-card">
+            <div class="dial-title">2. 💾 Capacidad real de un disquete de 3 ½ pulgadas en 1996:</div>
+            <div class="dial-options" data-dial="1">
+              <button type="button" class="dial-opt" data-val="144mb">1,44 MB</button>
+              <button type="button" class="dial-opt" data-val="64gb">64 GB</button>
+              <button type="button" class="dial-opt" data-val="1tb">1 TB</button>
+            </div>
+          </div>
+
+          <div class="dial-card">
+            <div class="dial-title">3. 🏫 Frase de Paulo Freire: "Enseñar no es transferir conocimiento, sino crear las posibilidades para su propia _______"</div>
+            <div class="dial-options" data-dial="2">
+              <button type="button" class="dial-opt" data-val="repeticion">repetición</button>
+              <button type="button" class="dial-opt" data-val="construccion">construcción</button>
+              <button type="button" class="dial-opt" data-val="copia">copia</button>
+            </div>
+          </div>
+
+          <button type="button" class="win-btn win-btn-danger" id="btn-open-vault" style="width:100%; font-size:1.05rem;">
+            🚨 ABRIR CÁPSULA Y ESCAPAR
+          </button>
+
+          <div id="r4-feedback" class="room-feedback"></div>
+          <button type="button" class="win-btn" id="r4-hint-btn">💡 Pedir Pista</button>
+          <div id="r4-hint-box" class="hint-box"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANTALLA FINAL: CREDENCIAL DE ESCAPE -->
+    <section id="screen-victory" class="screen">
+      <div class="win-window">
+        <div class="win-titlebar">
+          <div class="win-title-left">🏆 ESCAPE COMPLETADO — DIPLOMA.EXE</div>
+          <div class="win-controls"><span class="win-ctrl-btn">✕</span></div>
+        </div>
+        <div class="win-body">
+          <div class="diploma-card">
+            <div style="font-size:0.85rem; font-weight:900; color:#000080; text-transform:uppercase;">
+              Colegio Paulo Freire • 30 Años (1996 – 2026)
+            </div>
+            <h1 style="font-size:1.55rem; font-weight:900; color:#0B1F4D; margin:6px 0;">
+              🔓 ¡ESCAPARON DE 1996!
+            </h1>
+            <p style="font-size:0.9rem; font-weight:700; color:#334155;">
+              Rescataron el Acta Fundacional del 12 de diciembre de 1996.
+            </p>
+
+            <div class="win-inset" style="margin-top:12px; text-align:left; font-size:0.95rem;">
+              <div><strong>Equipo:</strong> <span id="vic-team">—</span></div>
+              <div><strong>Clase / Nivel:</strong> <span id="vic-class">—</span></div>
+            </div>
+
+            <div class="diploma-stats">
+              <div class="stat-box">
+                <div class="stat-val" id="vic-time">00:00</div>
+                <div class="stat-lbl">Tiempo de Escape</div>
+              </div>
+              <div class="stat-box">
+                <div class="stat-val" id="vic-hints">0</div>
+                <div class="stat-lbl">Pistas Usadas</div>
+              </div>
+            </div>
+
+            <div style="background:#D1FAE5; border:2px solid #059669; padding:10px; border-radius:6px;">
+              <div style="font-size:0.75rem; font-weight:800; color:#065F46; text-transform:uppercase;">Rango Obtenido</div>
+              <div id="vic-rank" style="font-size:1.1rem; font-weight:900; color:#064E3B;">—</div>
+            </div>
+          </div>
+
+          <div class="postit" style="transform:none; text-align:center;">
+            📸 ¡Sacale captura de pantalla a tu credencial y pasá por el Stand de Robótica e Informática!
+          </div>
+
+          <button type="button" id="btn-restart" class="win-btn win-btn-mint" style="width:100%;">
+            🔄 Jugar otra vez
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Barra de Tareas Win95 -->
+  <footer class="taskbar">
+    <div class="start-btn">🪟 Inicio 96</div>
+    <div class="taskbar-tray">
+      <span id="hud-timer">⏱ 00:00</span>
+      <span>|</span>
+      <span>12/12/96</span>
+      <button type="button" id="btn-mute" class="mute-btn" title="Sonido retro" aria-label="Activar o desactivar sonido">🔊</button>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const STORAGE_KEY = "pf_escape_1996_v2";
+
+      // Retro Web Audio Synthesizer (zero external files)
+      let audioCtx = null;
+      let isMuted = false;
+
+      function playTone(freq, duration, type = "square", vol = 0.06) {
+        if (isMuted) return;
+        try {
+          if (!audioCtx) {
+            const Ctx = window.AudioContext || window.webkitAudioContext;
+            if (!Ctx) return;
+            audioCtx = new Ctx();
+          }
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+          gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(audioCtx.currentTime + duration);
+        } catch (_) {}
+      }
+
+      const sfx = {
+        click: () => playTone(660, 0.04, "square", 0.04),
+        ok: () => {
+          playTone(523, 0.09, "square", 0.06);
+          setTimeout(() => playTone(659, 0.09, "square", 0.06), 90);
+          setTimeout(() => playTone(784, 0.16, "square", 0.07), 180);
+        },
+        err: () => {
+          playTone(180, 0.14, "sawtooth", 0.07);
+          setTimeout(() => playTone(140, 0.18, "sawtooth", 0.07), 140);
+        },
+        modem: () => {
+          playTone(1200, 0.07, "square", 0.04);
+          setTimeout(() => playTone(2400, 0.08, "square", 0.04), 80);
+          setTimeout(() => playTone(1800, 0.12, "sawtooth", 0.04), 170);
+        }
+      };
+
+      const defaultState = () => ({
+        screen: "login",
+        teamName: "",
+        teamClass: "Nivel 5 años",
+        currentRoom: 1,
+        solved: { 1: false, 2: false, 3: false, 4: false },
+        hintsUsed: 0,
+        elapsedSec: 0
+      });
+
+      let state = loadState();
+      let timerInterval = null;
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? Object.assign(defaultState(), JSON.parse(raw)) : defaultState();
+        } catch (_) {
+          return defaultState();
+        }
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (_) {}
+      }
+
+      function formatTime(sec) {
+        const m = String(Math.floor(sec / 60)).padStart(2, "0");
+        const s = String(sec % 60).padStart(2, "0");
+        return `${m}:${s}`;
+      }
+
+      const hudTimer = document.getElementById("hud-timer");
+      function startTimer() {
+        stopTimer();
+        hudTimer.textContent = "⏱ " + formatTime(state.elapsedSec);
+        timerInterval = setInterval(() => {
+          state.elapsedSec += 1;
+          hudTimer.textContent = "⏱ " + formatTime(state.elapsedSec);
+          if (state.elapsedSec % 5 === 0) saveState();
+        }, 1000);
+      }
+
+      function stopTimer() {
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+      }
+
+      document.getElementById("btn-mute").addEventListener("click", (e) => {
+        isMuted = !isMuted;
+        e.target.textContent = isMuted ? "🔇" : "🔊";
+      });
+
+      const screens = {
+        login: document.getElementById("screen-login"),
+        game: document.getElementById("screen-game"),
+        victory: document.getElementById("screen-victory")
+      };
+
+      function showScreen(name) {
+        state.screen = name;
+        saveState();
+        Object.keys(screens).forEach((k) => screens[k].classList.toggle("active", k === name));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      // Login Form
+      const loginForm = document.getElementById("login-form");
+      const teamNameInput = document.getElementById("team-name");
+      const teamClassSelect = document.getElementById("team-class");
+      const loginError = document.getElementById("login-error");
+
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = teamNameInput.value.trim();
+        if (!name) {
+          sfx.err();
+          loginError.classList.add("visible");
+          teamNameInput.focus();
+          return;
+        }
+        sfx.ok();
+        loginError.classList.remove("visible");
+        state = defaultState();
+        state.teamName = name;
+        state.teamClass = teamClassSelect.value;
+        startTimer();
+        renderRoomsStrip();
+        openRoom(1);
+        showScreen("game");
+      });
+
+      // Rooms Strip
+      const ROOM_META = [
+        { id: 1, icon: "💾", label: "Sala 1" },
+        { id: 2, icon: "📞", label: "Sala 2" },
+        { id: 3, icon: "♟️", label: "Sala 3" },
+        { id: 4, icon: "🔐", label: "Sala 4" }
+      ];
+
+      function renderRoomsStrip() {
+        const strip = document.getElementById("rooms-strip");
+        strip.innerHTML = "";
+        ROOM_META.forEach((rm) => {
+          const isSolved = state.solved[rm.id];
+          const isUnlocked = rm.id === 1 || state.solved[rm.id - 1];
+          const isActive = state.currentRoom === rm.id;
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "room-pill" +
+            (isActive ? " active" : "") +
+            (isSolved ? " solved" : "") +
+            (!isUnlocked ? " locked" : "");
+
+          btn.innerHTML = `
+            <span style="font-size:1.1rem;">${isSolved ? "✅" : isUnlocked ? rm.icon : "🔒"}</span>
+            <span>${rm.label}</span>
+          `;
+          if (isUnlocked) {
+            btn.addEventListener("click", () => {
+              sfx.click();
+              openRoom(rm.id);
+            });
+          } else {
+            btn.disabled = true;
+          }
+          strip.appendChild(btn);
+        });
+      }
+
+      function openRoom(roomId) {
+        state.currentRoom = roomId;
+        saveState();
+        document.querySelectorAll(".room-panel").forEach((el, idx) => {
+          el.style.display = (idx + 1 === roomId) ? "flex" : "none";
+        });
+        renderRoomsStrip();
+      }
+
+      function useHint(roomId, hintText, boxEl) {
+        sfx.click();
+        if (!boxEl.classList.contains("visible")) {
+          state.hintsUsed += 1;
+          saveState();
+        }
+        boxEl.textContent = "💡 Pista: " + hintText;
+        boxEl.classList.add("visible");
+      }
+
+      // ========================
+      // SALA 1: DISQUETE + 1212
+      // ========================
+      let floppyUnlocked = false;
+      let r1Code = "";
+      const btnWriteProtect = document.getElementById("btn-write-protect");
+      const floppyStatus = document.getElementById("floppy-lock-status");
+      const r1Display = document.getElementById("r1-display");
+      const r1Keypad = document.getElementById("r1-keypad");
+      const r1Feedback = document.getElementById("r1-feedback");
+
+      btnWriteProtect.addEventListener("click", () => {
+        sfx.click();
+        floppyUnlocked = !floppyUnlocked;
+        btnWriteProtect.classList.toggle("unlocked", floppyUnlocked);
+        btnWriteProtect.textContent = floppyUnlocked ? "SEGURO: OFF ✔" : "SEGURO: ON (Tocar)";
+        floppyStatus.textContent = floppyUnlocked ? "🔓 LISTO PARA LEER" : "🔒 PROTEGIDO";
+        floppyStatus.style.color = floppyUnlocked ? "#059669" : "#B91C1C";
+      });
+
+      const KEYS = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", "0", "OK"];
+      KEYS.forEach((k) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "win-btn key-btn" + (k === "OK" ? " win-btn-primary" : "");
+        b.textContent = k;
+        b.addEventListener("click", () => handleKeypad(k));
+        r1Keypad.appendChild(b);
+      });
+
+      function handleKeypad(k) {
+        sfx.click();
+        if (k === "⌫") {
+          r1Code = r1Code.slice(0, -1);
+          r1Display.textContent = r1Code.padEnd(4, "-");
+          return;
+        }
+        if (k === "OK") {
+          if (!floppyUnlocked) {
+            sfx.err();
+            r1Feedback.className = "room-feedback err";
+            r1Feedback.textContent = "❌ ERROR: El disquete tiene el seguro físico activado. ¡Tocalo para desbloquearlo primero!";
+            return;
+          }
+          if (r1Code === "1212") {
+            sfx.ok();
+            r1Feedback.className = "room-feedback ok";
+            r1Feedback.innerHTML = "✅ ¡DISQUETE DESBLOQUEADO! (12 de diciembre). Un disquete guardaba solo 1,44 MB: ¡menos de la mitad de una foto actual! <br><button type='button' class='win-btn win-btn-mint' style='margin-top:8px;width:100%;' onclick='window.__goRoom(2)'>Ir a la Sala 2 ➜</button>";
+            state.solved[1] = true;
+            saveState();
+            renderRoomsStrip();
+          } else {
+            sfx.err();
+            r1Feedback.className = "room-feedback err";
+            r1Feedback.textContent = "❌ Clave incorrecta. Revisá el calendario de Diciembre 1996 (Día + Mes).";
+            r1Code = "";
+            r1Display.textContent = "----";
+          }
+          return;
+        }
+        if (r1Code.length < 4) {
+          r1Code += k;
+          r1Display.textContent = r1Code.padEnd(4, "-");
+        }
+      }
+
+      document.getElementById("r1-hint-btn").addEventListener("click", () => {
+        useHint(1, "Primero tocá el botón negro en la esquina del disquete para quitar el seguro. Luego ingresá 12 (día) + 12 (mes de diciembre) = 1212.", document.getElementById("r1-hint-box"));
+      });
+
+      // ========================
+      // SALA 2: MÓDEM + DOS + TAMAGOTCHI
+      // ========================
+      let phoneConnected = true;
+      let modemOn = false;
+      let dosConnected = false;
+
+      const togglePhone = document.getElementById("toggle-phone");
+      const toggleModem = document.getElementById("toggle-modem");
+      const dosScreen = document.getElementById("dos-screen");
+      const r2PuzzleArea = document.getElementById("r2-puzzle-area");
+      const r2Feedback = document.getElementById("r2-feedback");
+
+      function updateModemState() {
+        togglePhone.className = "device-toggle " + (phoneConnected ? "on" : "off");
+        togglePhone.textContent = phoneConnected ? "☎️ Teléfono: CONECTADO" : "☎️ Teléfono: DESCONECTADO";
+
+        toggleModem.className = "device-toggle " + (modemOn ? "on" : "off");
+        toggleModem.textContent = modemOn ? "📠 Módem 33.6K: ENCENDIDO" : "📠 Módem 33.6K: APAGADO";
+
+        if (modemOn && phoneConnected) {
+          sfx.err();
+          dosConnected = false;
+          dosScreen.innerHTML = `<div class="crt-amber">ERROR DE LÍNEA: ¡El teléfono fijo está ocupado! Desconectá el teléfono para usar el módem.</div>`;
+          r2PuzzleArea.style.display = "none";
+        } else if (modemOn && !phoneConnected) {
+          if (!dosConnected) {
+            sfx.modem();
+            dosConnected = true;
+            dosScreen.innerHTML = `
+              <div>ATDT 0900-1996...</div>
+              <div class="crt-amber">CONNECT 33600 bps — ¡CONECTADO!</div>
+              <div>C:\\FREIRE96&gt; Tocá <strong>DIR</strong> o <strong>TYPE LEEME.TXT</strong> abajo.</div>
+            `;
+            r2PuzzleArea.style.display = "block";
+          }
+        } else {
+          dosConnected = false;
+          dosScreen.innerHTML = `<div>C:\\FREIRE96&gt; Esperando conexión telefónica libre...</div>`;
+          r2PuzzleArea.style.display = "none";
+        }
+      }
+
+      togglePhone.addEventListener("click", () => {
+        sfx.click();
+        phoneConnected = !phoneConnected;
+        updateModemState();
+      });
+
+      toggleModem.addEventListener("click", () => {
+        sfx.click();
+        modemOn = !modemOn;
+        updateModemState();
+      });
+
+      document.getElementById("dos-dir").addEventListener("click", () => {
+        sfx.click();
+        if (!dosConnected) {
+          dosScreen.innerHTML = `<div class="crt-amber">Primero liberá la línea del teléfono y encendé el módem.</div>`;
+          return;
+        }
+        dosScreen.innerHTML = `
+          <div>C:\\FREIRE96&gt; DIR</div>
+          <div>ACTA_1996.DOC   14,200 bytes</div>
+          <div>LEEME.TXT          512 bytes</div>
+          <div class="crt-amber">CAPSULA.ZIP     [BLOQUEADO]</div>
+        `;
+      });
+
+      document.getElementById("dos-readme").addEventListener("click", () => {
+        sfx.click();
+        if (!dosConnected) {
+          dosScreen.innerHTML = `<div class="crt-amber">Primero liberá la línea del teléfono y encendé el módem.</div>`;
+          return;
+        }
+        dosScreen.innerHTML = `
+          <div>C:\\FREIRE96&gt; TYPE LEEME.TXT</div>
+          <div class="crt-amber">"Para abrir CAPSULA.ZIP, escribí el nombre del juguete digital con forma de huevo lanzado en 1996."</div>
+        `;
+      });
+
+      // Word Puzzle: TAMAGOTCHI
+      const TARGET_WORD = "TAMAGOTCHI";
+      const BANK_LETTERS = ["T", "A", "M", "A", "G", "O", "T", "C", "H", "I"];
+      let pickedIndices = [];
+      const r2Slots = document.getElementById("r2-slots");
+      const r2Bank = document.getElementById("r2-bank");
+
+      function renderWordPuzzle() {
+        r2Slots.innerHTML = "";
+        for (let i = 0; i < TARGET_WORD.length; i++) {
+          const slot = document.createElement("div");
+          slot.className = "letter-slot";
+          slot.textContent = pickedIndices[i] !== undefined ? BANK_LETTERS[pickedIndices[i]] : "";
+          r2Slots.appendChild(slot);
+        }
+
+        r2Bank.innerHTML = "";
+        // Deterministic scramble order
+        const order = [4, 0, 8, 2, 9, 5, 1, 7, 3, 6];
+        order.forEach((origIdx) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "win-btn tile-btn" + (pickedIndices.includes(origIdx) ? " used" : "");
+          btn.textContent = BANK_LETTERS[origIdx];
+          btn.addEventListener("click", () => {
+            sfx.click();
+            if (pickedIndices.length < TARGET_WORD.length) {
+              pickedIndices.push(origIdx);
+              renderWordPuzzle();
+            }
+          });
+          r2Bank.appendChild(btn);
+        });
+      }
+      renderWordPuzzle();
+
+      document.getElementById("r2-clear").addEventListener("click", () => {
+        sfx.click();
+        pickedIndices.pop();
+        renderWordPuzzle();
+      });
+
+      document.getElementById("r2-submit").addEventListener("click", () => {
+        const word = pickedIndices.map((i) => BANK_LETTERS[i]).join("");
+        if (word === TARGET_WORD) {
+          sfx.ok();
+          r2Feedback.className = "room-feedback ok";
+          r2Feedback.innerHTML = "✅ ¡CAPSULA.ZIP DESCOMPRIMIDA! En 1996 el Tamagotchi tenía 3 botones y pantalla blanco y negro. <br><button type='button' class='win-btn win-btn-mint' style='margin-top:8px;width:100%;' onclick='window.__goRoom(3)'>Ir a la Sala 3 ➜</button>";
+          state.solved[2] = true;
+          saveState();
+          renderRoomsStrip();
+        } else {
+          sfx.err();
+          r2Feedback.className = "room-feedback err";
+          r2Feedback.textContent = "❌ Clave incorrecta. Ordená las letras para formar la mascota virtual de 1996.";
+        }
+      });
+
+      document.getElementById("r2-hint-btn").addEventListener("click", () => {
+        useHint(2, "Desconectá el Teléfono y encendé el Módem. Luego formá la palabra T-A-M-A-G-O-T-C-H-I.", document.getElementById("r2-hint-box"));
+      });
+
+      // ========================
+      // SALA 3: AJEDREZ DEEP BLUE
+      // ========================
+      // 4x4 board: King at (0, 3), Rook at (3, 0), Pawn blocking row 0 at (0, 1)? No, let's make (3,3) -> capture (0,3)!
+      // Pawn at (1, 1) decorative, Rook at (3, 0) -> wait: Rook moves straight! If Rook is at (3, 1) and King is at (0, 3), 1 move can't capture unless aligned!
+      // Align Rook at (3, 3) and King at (0, 3), with a decoy Bishop/Knight or just Rook at (3, 3) -> King at (0, 3)!
+      // Even better: Rook at (2, 0), King at (2, 3) -> straight horizontal capture! Plus Pawn at (0, 2) as decoy.
+      let rookPos = { r: 2, c: 0 };
+      const kingPos = { r: 2, c: 3 };
+      const pawnPos = { r: 0, c: 2 };
+      let rookSelected = false;
+      const chessBoardEl = document.getElementById("chess-board");
+      const r3Feedback = document.getElementById("r3-feedback");
+
+      function renderChess() {
+        chessBoardEl.innerHTML = "";
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 4; c++) {
+            const cell = document.createElement("button");
+            cell.type = "button";
+            const isLight = (r + c) % 2 === 0;
+            cell.className = "chess-cell " + (isLight ? "light" : "dark");
+
+            if (r === rookPos.r && c === rookPos.c) {
+              cell.textContent = "♖";
+              if (rookSelected) cell.classList.add("selected");
+            } else if (r === kingPos.r && c === kingPos.c && !state.solved[3]) {
+              cell.textContent = "♚";
+            } else if (r === pawnPos.r && c === pawnPos.c) {
+              cell.textContent = "♟";
+            }
+
+            cell.addEventListener("click", () => handleChessClick(r, c));
+            chessBoardEl.appendChild(cell);
+          }
+        }
+      }
+
+      function handleChessClick(r, c) {
+        if (state.solved[3]) return;
+        if (r === rookPos.r && c === rookPos.c) {
+          sfx.click();
+          rookSelected = !rookSelected;
+          renderChess();
+          return;
+        }
+        if (rookSelected) {
+          if (r === kingPos.r && c === kingPos.c) {
+            sfx.ok();
+            rookPos = { r, c };
+            rookSelected = false;
+            state.solved[3] = true;
+            saveState();
+            renderChess();
+            renderRoomsStrip();
+            r3Feedback.className = "room-feedback ok";
+            r3Feedback.innerHTML = "✅ ¡JAQUE MATE A DEEP BLUE! Código rescatado: <strong>1 cm/seg</strong> • <strong>1,44 MB</strong> • <strong>construcción</strong>. <br><button type='button' class='win-btn win-btn-mint' style='margin-top:8px;width:100%;' onclick='window.__goRoom(4)'>Ir a la Bóveda Final ➜</button>";
+          } else {
+            sfx.err();
+            r3Feedback.className = "room-feedback err";
+            r3Feedback.textContent = "❌ Mové la Torre Blanca (♖) directo en línea recta hasta el Rey Negro (♚).";
+          }
+        } else {
+          sfx.click();
+          r3Feedback.className = "room-feedback err";
+          r3Feedback.textContent = "Primero tocá la Torre Blanca (♖) para seleccionarla.";
+        }
+      }
+      renderChess();
+
+      document.getElementById("r3-hint-btn").addEventListener("click", () => {
+        useHint(3, "Tocá la Torre Blanca (♖) en la fila de abajo-izquierda y luego tocá directamente al Rey Negro (♚) en la misma fila a la derecha.", document.getElementById("r3-hint-box"));
+      });
+
+      // ========================
+      // SALA 4: BÓVEDA FINAL
+      // ========================
+      const dialAnswers = [null, null, null];
+      const dialCorrect = ["1cm", "144mb", "construccion"];
+      const r4Feedback = document.getElementById("r4-feedback");
+
+      document.querySelectorAll(".dial-options").forEach((group) => {
+        const dialIdx = Number(group.dataset.dial);
+        group.querySelectorAll(".dial-opt").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            sfx.click();
+            group.querySelectorAll(".dial-opt").forEach((b) => b.classList.remove("picked"));
+            btn.classList.add("picked");
+            dialAnswers[dialIdx] = btn.dataset.val;
+          });
+        });
+      });
+
+      document.getElementById("btn-open-vault").addEventListener("click", () => {
+        if (dialAnswers.some((v) => v === null)) {
+          sfx.err();
+          r4Feedback.className = "room-feedback err";
+          r4Feedback.textContent = "❌ Calibrá los 3 diales antes de intentar abrir la cápsula.";
+          return;
+        }
+        const allOk = dialAnswers.every((v, idx) => v === dialCorrect[idx]);
+        if (allOk) {
+          sfx.ok();
+          state.solved[4] = true;
+          stopTimer();
+          saveState();
+          renderVictory();
+          showScreen("victory");
+          launchConfetti();
+        } else {
+          sfx.err();
+          r4Feedback.className = "room-feedback err";
+          r4Feedback.textContent = "❌ Uno o más diales de 1996 están mal calibrados. ¡Revisá los datos!";
+        }
+      });
+
+      document.getElementById("r4-hint-btn").addEventListener("click", () => {
+        useHint(4, "Sojourner: 1 cm/seg | Disquete: 1,44 MB | Frase de Paulo Freire: construcción.", document.getElementById("r4-hint-box"));
+      });
+
+      window.__goRoom = function (id) {
+        sfx.click();
+        openRoom(id);
+      };
+
+      // ========================
+      // VICTORIA & CONFETI
+      // ========================
+      function getRank() {
+        if (state.hintsUsed === 0 && state.elapsedSec <= 240) return "Maestros del Tiempo 1996 🚀";
+        if (state.hintsUsed <= 2) return "Hackers de la Cápsula 💾";
+        return "Exploradores Retro Freire 🌟";
+      }
+
+      function renderVictory() {
+        document.getElementById("vic-team").textContent = state.teamName;
+        document.getElementById("vic-class").textContent = state.teamClass;
+        document.getElementById("vic-time").textContent = formatTime(state.elapsedSec);
+        document.getElementById("vic-hints").textContent = String(state.hintsUsed);
+        document.getElementById("vic-rank").textContent = getRank();
+      }
+
+      document.getElementById("btn-restart").addEventListener("click", () => {
+        sfx.click();
+        stopConfetti();
+        stopTimer();
+        state = defaultState();
+        saveState();
+        teamNameInput.value = "";
+        teamClassSelect.selectedIndex = 0;
+        hudTimer.textContent = "⏱ 00:00";
+        // Reset interactive rooms UI
+        floppyUnlocked = false;
+        r1Code = "";
+        r1Display.textContent = "----";
+        btnWriteProtect.classList.remove("unlocked");
+        btnWriteProtect.textContent = "SEGURO: ON (Tocar)";
+        floppyStatus.textContent = "🔒 PROTEGIDO";
+        floppyStatus.style.color = "#B91C1C";
+        phoneConnected = true;
+        modemOn = false;
+        dosConnected = false;
+        updateModemState();
+        pickedIndices = [];
+        renderWordPuzzle();
+        rookPos = { r: 2, c: 0 };
+        rookSelected = false;
+        renderChess();
+        dialAnswers.fill(null);
+        document.querySelectorAll(".dial-opt").forEach((b) => b.classList.remove("picked"));
+        document.querySelectorAll(".room-feedback").forEach((f) => { f.className = "room-feedback"; f.textContent = ""; });
+        document.querySelectorAll(".hint-box").forEach((h) => { h.classList.remove("visible"); });
+        showScreen("login");
+      });
+
+      // Pure Canvas Confetti
+      const canvas = document.getElementById("confetti-canvas");
+      const ctx = canvas.getContext("2d");
+      let particles = [];
+      let animId = null;
+
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      function launchConfetti() {
+        stopConfetti();
+        resizeCanvas();
+        const colors = ["#FFD13B", "#2CE5A7", "#FFFFFF", "#1084D0", "#FF4D6A"];
+        particles = Array.from({ length: 110 }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * -canvas.height,
+          w: 7 + Math.random() * 6,
+          h: 10 + Math.random() * 7,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 3,
+          vy: 2.5 + Math.random() * 3.5,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 0.14
+        }));
+
+        function tick() {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          let alive = 0;
+          particles.forEach((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rot += p.vRot;
+            if (p.y < canvas.height + 20) alive++;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rot);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+          });
+          if (alive > 0) animId = requestAnimationFrame(tick);
+          else ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+        animId = requestAnimationFrame(tick);
+      }
+
+      function stopConfetti() {
+        if (animId) cancelAnimationFrame(animId);
+        animId = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+
+      // Restore if reloaded mid-escape
+      if (state.screen === "victory" && state.solved[4]) {
+        renderVictory();
+        hudTimer.textContent = "⏱ " + formatTime(state.elapsedSec);
+        showScreen("victory");
+      } else if (state.screen === "game" && state.teamName) {
+        startTimer();
+        renderRoomsStrip();
+        openRoom(state.currentRoom || 1);
+        showScreen("game");
+      } else {
+        showScreen("login");
+      }
+    })();
+  </script>
+</body>
+</html>
