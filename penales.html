@@ -345,6 +345,20 @@
       }
     }
 
+    /* Split-screen for Team devices: Left = Animation, Right = Question + Direction */
+    .team-split-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 820px) {
+      .team-split-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .room-banner {
       display: flex;
       align-items: center;
@@ -936,24 +950,17 @@
 
       <div class="roles-grid">
         <div class="role-card">
-          <div class="role-icon">🖥️</div>
-          <h3>1. Pantalla Principal / Marcador</h3>
-          <p>Para el proyector o PC docente. Crea la sala, muestra el arco, las animaciones, el marcador y el historial.</p>
-          <button id="btn-join-host" class="btn btn-green">Crear Sala (Proyector)</button>
-        </div>
-
-        <div class="role-card">
           <div class="role-icon">🟢</div>
-          <h3>2. Equipo Verde (Equipo 1)</h3>
-          <p>Dispositivo del Equipo Verde. Rota automáticamente entre Pateador y Arquero en cada penal.</p>
-          <button id="btn-join-team-a" class="btn btn-green">Unirse como Equipo Verde</button>
+          <h3>1. Equipo Verde (Crea la Sala)</h3>
+          <p>Crea la sala con el código y juega directamente. Rota automáticamente entre Pateador y Arquero.</p>
+          <button id="btn-join-team-a" class="btn btn-green">Crear Sala y Jugar (Verde)</button>
         </div>
 
         <div class="role-card">
           <div class="role-icon">🔵</div>
-          <h3>3. Equipo Azul (Equipo 2)</h3>
-          <p>Dispositivo del Equipo Azul. Rota automáticamente entre Pateador y Arquero en cada penal.</p>
-          <button id="btn-join-team-b" class="btn btn-blue">Unirse como Equipo Azul</button>
+          <h3>2. Equipo Azul (Se une a la Sala)</h3>
+          <p>Se conecta a la sala del Equipo Verde y juega en paralelo con rotación automática.</p>
+          <button id="btn-join-team-b" class="btn btn-blue">Unirse y Jugar (Azul)</button>
         </div>
 
         <div class="role-card">
@@ -1167,65 +1174,135 @@
       </div>
     </section>
 
-    <!-- ===================== VISTA 2: DISPOSITIVO DE EQUIPO (CLIENTES CON ROTACIÓN) ===================== -->
-    <section id="view-player" class="player-shell hidden">
+    <!-- ===================== VISTA 2: DISPOSITIVO DE EQUIPO (PANTALLA DIVIDIDA + PARALELO) ===================== -->
+    <section id="view-player" class="hidden">
       <div class="room-banner" style="padding: 10px 16px; margin-bottom: 12px;">
         <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+          <span id="player-room-badge" class="room-code-big" style="font-size: 1.15rem; padding: 3px 10px;">FREIRE30</span>
           <span id="player-team-badge" class="pill online">🟢 Equipo Verde</span>
           <span id="player-turn-role-badge" class="pill warn">Esperando...</span>
         </div>
-        <div id="player-mini-score" style="font-weight: 900; font-size: 1.15rem; color: var(--yellow);">0 - 0</div>
+        <div id="player-rival-status" class="pill offline">Rival: Esperando</div>
       </div>
 
-      <div class="card" id="player-waiting-card">
-        <div class="waiting-card">
-          <div class="waiting-pulse" id="player-wait-icon">⏳</div>
-          <h2 id="player-wait-title" style="font-size: 1.5rem; font-weight: 900; margin-bottom: 8px;">
-            Conectado a la sala
-          </h2>
-          <p id="player-wait-desc" style="color: var(--muted); font-size: 1.05rem;">
-            Esperando que la Pantalla Principal inicie el penal...
-          </p>
+      <div class="scoreboard" style="margin-bottom: 14px;">
+        <div class="team-col">
+          <div class="team-name">
+            <span class="team-badge" style="background: var(--green);"></span>
+            <span id="pl-sb-name-a">Equipo Verde</span>
+            <span id="pl-sb-turn-a" class="pill online hidden" style="font-size: 0.72rem; padding: 2px 8px;">PATEA</span>
+          </div>
+          <div id="pl-sb-dots-a" class="team-dots"></div>
+        </div>
+        <div class="score-center">
+          <div id="pl-sb-score" class="score-numbers">0 - 0</div>
+          <div id="pl-sb-round" class="score-round">Tanda al mejor de 5</div>
+        </div>
+        <div class="team-col right">
+          <div class="team-name">
+            <span id="pl-sb-turn-b" class="pill online hidden" style="font-size: 0.72rem; padding: 2px 8px;">PATEA</span>
+            <span id="pl-sb-name-b">Equipo Azul</span>
+            <span class="team-badge" style="background: var(--blue);"></span>
+          </div>
+          <div id="pl-sb-dots-b" class="team-dots"></div>
         </div>
       </div>
 
-      <div class="card hidden" id="player-active-card">
-        <div class="turn-header">
-          <span class="year-badge" id="player-year-badge">📅 Año 1996</span>
-          <span class="pill" id="player-role-pill">👟 Pateador</span>
-          <div class="timer-box" id="player-timer-box">⏱️ <span id="player-timer-num">15</span>s</div>
-        </div>
-
-        <div class="timer-bar-wrap">
-          <div class="timer-bar-fill" id="player-timer-bar"></div>
-        </div>
-
-        <div class="question-text" id="player-question-text">
-          Pregunta aquí...
-        </div>
-
-        <div class="options-grid" id="player-options-grid"></div>
-
-        <div class="direction-section">
-          <h4 id="player-dir-label">Elegí la dirección del tiro</h4>
-          <div class="direction-grid">
-            <button type="button" class="dir-btn" data-dir="Izquierda">⬅️<span>Izquierda</span></button>
-            <button type="button" class="dir-btn" data-dir="Centro">⬆️<span>Centro</span></button>
-            <button type="button" class="dir-btn" data-dir="Derecha">➡️<span>Derecha</span></button>
+      <div class="team-split-grid">
+        <!-- IZQUIERDA: Animación del arco + Controles de tanda -->
+        <div class="card">
+          <div id="player-stadium-wrap"></div>
+          <div id="player-stage-status" class="alert-box alert-info" style="margin-bottom: 12px;">
+            Listos para comenzar. Cuando ambos equipos estén conectados, iniciá el penal.
+          </div>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button id="btn-pl-start-kick" class="btn btn-green btn-lg" style="flex: 1;">
+              ⚽ Iniciar Penal
+            </button>
+            <button id="btn-pl-reset" class="btn btn-outline">
+              🔄 Reiniciar
+            </button>
+          </div>
+          <div id="pl-host-config" class="hidden" style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border);">
+            <div class="config-row">
+              <div class="field-group">
+                <label for="pl-cfg-penalties">Penales por equipo</label>
+                <select id="pl-cfg-penalties">
+                  <option value="3">Al mejor de 3</option>
+                  <option value="5" selected>Al mejor de 5</option>
+                  <option value="7">Al mejor de 7</option>
+                  <option value="10">Al mejor de 10</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label for="pl-cfg-year">Año de preguntas</label>
+                <select id="pl-cfg-year">
+                  <option value="ALL" selected>Todos (1996–2026)</option>
+                  <option value="1996">1996 (Fundación)</option>
+                  <option value="2001">2001 (5 años)</option>
+                  <option value="2006">2006 (10 años)</option>
+                  <option value="2011">2011 (15 años)</option>
+                  <option value="2016">2016 (20 años)</option>
+                  <option value="2021">2021 (25 años)</option>
+                  <option value="2026">2026 (30 años)</option>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
 
-        <button id="btn-player-submit" class="btn btn-green btn-lg" style="width: 100%;" disabled>
-          ¡ENVIAR JUGADA!
-        </button>
-      </div>
+        <!-- DERECHA: Pregunta, opciones, dirección y temporizador 30s -->
+        <div>
+          <div class="card" id="player-waiting-card">
+            <div class="waiting-card">
+              <div class="waiting-pulse" id="player-wait-icon">⏳</div>
+              <h2 id="player-wait-title" style="font-size: 1.4rem; font-weight: 900; margin-bottom: 8px;">
+                Sala lista
+              </h2>
+              <p id="player-wait-desc" style="color: var(--muted); font-size: 1rem;">
+                Presioná "Iniciar Penal" para jugar en paralelo (30 segundos).
+              </p>
+            </div>
+          </div>
 
-      <div class="card hidden" id="player-result-card">
-        <div id="player-stadium-wrap"></div>
-        <div class="waiting-card" style="padding: 12px 10px 16px;">
-          <h2 id="player-res-title" style="font-size: 1.7rem; font-weight: 900; margin-bottom: 6px;">¡GOOOL!</h2>
-          <p id="player-res-desc" style="color: var(--muted); font-size: 1rem; margin-bottom: 12px;"></p>
-          <div id="player-res-reveal" class="answer-reveal" style="text-align: left;"></div>
+          <div class="card hidden" id="player-active-card">
+            <div class="turn-header">
+              <span class="year-badge" id="player-year-badge">📅 Año 1996</span>
+              <span class="pill" id="player-role-pill">👟 Pateador</span>
+              <div class="timer-box" id="player-timer-box">⏱️ <span id="player-timer-num">30</span>s</div>
+            </div>
+
+            <div class="timer-bar-wrap">
+              <div class="timer-bar-fill" id="player-timer-bar"></div>
+            </div>
+
+            <div class="question-text" id="player-question-text">
+              Pregunta aquí...
+            </div>
+
+            <div class="options-grid" id="player-options-grid"></div>
+
+            <div class="direction-section">
+              <h4 id="player-dir-label">Elegí la dirección del tiro</h4>
+              <div class="direction-grid">
+                <button type="button" class="dir-btn" data-dir="Izquierda">⬅️<span>Izquierda</span></button>
+                <button type="button" class="dir-btn" data-dir="Centro">⬆️<span>Centro</span></button>
+                <button type="button" class="dir-btn" data-dir="Derecha">➡️<span>Derecha</span></button>
+              </div>
+            </div>
+
+            <button id="btn-player-submit" class="btn btn-green btn-lg" style="width: 100%;" disabled>
+              ¡ENVIAR JUGADA!
+            </button>
+          </div>
+
+          <div class="card hidden" id="player-result-card">
+            <div class="waiting-card" style="padding: 16px 10px;">
+              <h2 id="player-res-title" style="font-size: 1.7rem; font-weight: 900; margin-bottom: 6px;">¡GOOOL!</h2>
+              <p id="player-res-desc" style="color: var(--muted); font-size: 1rem; margin-bottom: 12px;"></p>
+              <div id="player-res-reveal" class="answer-reveal" style="text-align: left;"></div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1809,7 +1886,7 @@
        ========================================================================= */
     const YEARS_LIST = [1996, 2001, 2006, 2011, 2016, 2021, 2026];
     const PEER_PREFIX = "freire30-sala-";
-    const TURN_SECONDS = 15;
+    const TURN_SECONDS = 30;
 
     let soundEnabled = true;
     let audioCtx = null;
@@ -1963,24 +2040,33 @@
     });
 
     /* =========================================================================
-       ESTADO & LÓGICA DEL HOST (PANTALLA PRINCIPAL)
+       MOTOR PARALELO P2P (SIN MÁQUINA DEL PROFESOR)
+       Equipo Verde ("A") crea la sala y juega; Equipo Azul ("B") se une y juega.
        ========================================================================= */
     let peer = null;
-    let hostConnections = []; // { conn, role: 'kicker'|'keeper' }
+    let hostConnections = []; // conexiones de Equipo Azul
+    let clientConn = null;
     let hostTimerInterval = null;
+    let myTeam = "A"; // "A" (Host+Jugador) | "B" (Cliente+Jugador)
 
     let gameState = createInitialGameState();
 
+    // Estado local de UI del jugador
+    let playerSelectedOption = null;
+    let playerSelectedDir = null;
+    let playerCurrentTurnRendered = -1;
+    let playerLastAnimatedTurn = -1;
+
     function createInitialGameState() {
       return {
-        phase: "IDLE", // IDLE | KICKER_TURN | KEEPER_TURN | RESULT | MATCH_OVER
+        phase: "IDLE", // IDLE | PLAYING_TURN | RESULT | MATCH_OVER
         teamAName: "Equipo Verde",
         teamBName: "Equipo Azul",
         maxPenalties: 5,
         yearFilter: "ALL",
         suddenDeathEnabled: true,
-        currentTeam: "A", // "A" or "B"
-        kicksA: [], // 'goal' | 'save' | 'miss'
+        currentTeam: "A", // Equipo que PATEA en este turno ("A" o "B")
+        kicksA: [],
         kicksB: [],
         scoreA: 0,
         scoreB: 0,
@@ -1988,12 +2074,12 @@
         usedQuestionIds: [],
         turnNumber: 0,
         timeLeft: TURN_SECONDS,
-        kickerQuestion: null, // full question with .correct (NEVER sent to clients during turn)
+        kickerQuestion: null,
         keeperQuestion: null,
-        kickerSubmission: null, // { optionIndex, direction, isCorrect, timedOut }
-        keeperSubmission: null,
-        lastOutcome: null, // { result: 'goal'|'save'|'miss', title, subtitle, shotDir, keeperDir, kickerQ, keeperQ }
-        history: [] // { turn, teamName, year, result, label }
+        kickerSubmission: null, // { optionIndex, direction, timedOut }
+        keeperSubmission: null, // { optionIndex, direction, timedOut }
+        lastOutcome: null,
+        history: []
       };
     }
 
@@ -2023,353 +2109,15 @@
       return true;
     }
 
-    // --- Crear Sala (Host) ---
-    document.getElementById("btn-join-host").addEventListener("click", () => {
-      clearLobbyError();
-      if (!ensurePeerJSLoaded()) return;
-
-      const code = sanitizeCode(document.getElementById("input-room-code").value);
-      document.getElementById("input-room-code").value = code;
-      cleanupNetwork();
-
-      gameState = createInitialGameState();
-      syncConfigFromHostInputs();
-
-      showView("host");
-      document.getElementById("host-room-code").textContent = code;
-      document.getElementById("host-peer-status").textContent = "Creando sala...";
-      document.getElementById("host-peer-status").className = "pill warn";
-      connBadge.textContent = `Sala ${code} (Proyector)`;
-      connBadge.className = "pill warn";
-
-      peer = new Peer(PEER_PREFIX + code, { debug: 1 });
-
-      peer.on("open", () => {
-        document.getElementById("host-peer-status").textContent = "Sala activa ✅";
-        document.getElementById("host-peer-status").className = "pill online";
-        connBadge.textContent = `Sala ${code} · En línea`;
-        connBadge.className = "pill online";
-        renderHost();
-      });
-
-      peer.on("connection", (conn) => {
-        conn.on("data", (msg) => handleHostIncoming(conn, msg));
-        conn.on("close", () => {
-          hostConnections = hostConnections.filter(c => c.conn !== conn);
-          updateHostConnBadges();
-        });
-      });
-
-      peer.on("error", (err) => {
-        if (err.type === "unavailable-id") {
-          document.getElementById("host-peer-status").textContent = "Código en uso";
-          document.getElementById("host-peer-status").className = "pill offline";
-          alert(`El código "${code}" ya está en uso en PeerJS. Hacé clic en "Inicio" y generá un código nuevo.`);
-        } else {
-          document.getElementById("host-peer-status").textContent = "Error de red";
-          document.getElementById("host-peer-status").className = "pill offline";
-        }
-      });
-    });
-
-    function updateHostConnBadges() {
-      const teamA = hostConnections.filter(c => c.team === "A").length;
-      const teamB = hostConnections.filter(c => c.team === "B").length;
-
-      const ba = document.getElementById("badge-team-a-conn");
-      ba.textContent = `🟢 ${gameState.teamAName}: ${teamA}`;
-      ba.className = teamA > 0 ? "pill online" : "pill offline";
-
-      const bb = document.getElementById("badge-team-b-conn");
-      bb.textContent = `🔵 ${gameState.teamBName}: ${teamB}`;
-      bb.className = teamB > 0 ? "pill online" : "pill offline";
-    }
-
-    function handleHostIncoming(conn, msg) {
-      if (!msg || !msg.type) return;
-
-      if (msg.type === "REGISTER") {
-        const team = msg.team === "B" ? "B" : "A";
-        hostConnections = hostConnections.filter(c => c.conn !== conn);
-        hostConnections.push({ conn, team });
-        updateHostConnBadges();
-        sendStateToClient(conn, team);
-        return;
-      }
-
-      const sender = hostConnections.find(c => c.conn === conn);
-      if (!sender) return;
-      const isKickerSender = sender.team === gameState.currentTeam;
-
-      if (msg.type === "KICKER_SUBMIT" && gameState.phase === "KICKER_TURN" && isKickerSender) {
-        resolveKickerTurn(msg.optionIndex, msg.direction, false);
-        return;
-      }
-
-      if (msg.type === "KEEPER_SUBMIT" && gameState.phase === "KEEPER_TURN" && !isKickerSender) {
-        resolveKeeperTurn(msg.optionIndex, msg.direction, false);
-        return;
-      }
-    }
-
-    function sanitizeQuestionForClient(q) {
-      if (!q) return null;
-      return {
-        id: q.id,
-        year: q.year,
-        milestone: q.milestone,
-        q: q.q,
-        options: q.options
-        // NUNCA enviamos q.correct mientras el turno está activo
-      };
-    }
-
-    function sendStateToClient(conn, clientTeam) {
-      const kickingTeamName = gameState.currentTeam === "A" ? gameState.teamAName : gameState.teamBName;
-      const myTeamName = clientTeam === "A" ? gameState.teamAName : gameState.teamBName;
-      const activeRole = clientTeam === gameState.currentTeam ? "kicker" : "keeper";
-      const payload = {
-        type: "STATE_UPDATE",
-        phase: gameState.phase,
-        clientTeam,
-        myTeamName,
-        activeRole,
-        kickingTeamName,
-        teamAName: gameState.teamAName,
-        teamBName: gameState.teamBName,
-        scoreA: gameState.scoreA,
-        scoreB: gameState.scoreB,
-        timeLeft: gameState.timeLeft,
-        turnNumber: gameState.turnNumber,
-        question: activeRole === "kicker"
-          ? (gameState.phase === "KICKER_TURN" ? sanitizeQuestionForClient(gameState.kickerQuestion) : null)
-          : (gameState.phase === "KEEPER_TURN" ? sanitizeQuestionForClient(gameState.keeperQuestion) : null),
-        lastOutcome: (gameState.phase === "RESULT" || gameState.phase === "MATCH_OVER") ? gameState.lastOutcome : null
-      };
-      try { conn.send(payload); } catch {}
-    }
-
-    function broadcastState() {
-      hostConnections.forEach(({ conn, team }) => sendStateToClient(conn, team));
-    }
-
-    function syncConfigFromHostInputs() {
-      gameState.teamAName = document.getElementById("cfg-team-a").value.trim() || "Equipo Verde";
-      gameState.teamBName = document.getElementById("cfg-team-b").value.trim() || "Equipo Azul";
-      gameState.maxPenalties = parseInt(document.getElementById("cfg-penalties").value, 10) || 5;
-      gameState.yearFilter = document.getElementById("cfg-year").value || "ALL";
-      gameState.suddenDeathEnabled = document.getElementById("cfg-sudden-death").checked;
-    }
-
-    ["cfg-team-a", "cfg-team-b", "cfg-penalties", "cfg-year", "cfg-sudden-death"].forEach(id => {
-      document.getElementById(id).addEventListener("change", () => {
-        syncConfigFromHostInputs();
-        renderHost();
-      });
-    });
-
-    document.getElementById("btn-host-start-kick").addEventListener("click", () => {
-      if (gameState.phase === "KICKER_TURN" || gameState.phase === "KEEPER_TURN") return;
-      if (gameState.phase === "MATCH_OVER") {
-        resetHostMatch();
-        return;
-      }
-      startNewPenaltyTurn();
-    });
-
-    document.getElementById("btn-host-reset").addEventListener("click", () => {
-      resetHostMatch();
-    });
-
-    function resetHostMatch() {
-      clearInterval(hostTimerInterval);
-      gameState = createInitialGameState();
-      syncConfigFromHostInputs();
-      resetGoalAnimation();
-      renderHost();
-      broadcastState();
-    }
-
-    function startNewPenaltyTurn() {
-      syncConfigFromHostInputs();
-      resetGoalAnimation();
-
-      gameState.turnNumber += 1;
-      gameState.kickerSubmission = null;
-      gameState.keeperSubmission = null;
-      gameState.lastOutcome = null;
-
-      // Pick year: if ALL, cycle through milestones or random
-      const targetYear = gameState.yearFilter === "ALL"
-        ? YEARS_LIST[(gameState.turnNumber - 1) % YEARS_LIST.length]
-        : gameState.yearFilter;
-
-      const kq = pickQuestion(targetYear, null, gameState.usedQuestionIds);
-      gameState.usedQuestionIds.push(kq.id);
-      if (gameState.usedQuestionIds.length > QUESTION_BANK.length - 4) {
-        gameState.usedQuestionIds = [kq.id];
-      }
-
-      // Pregunta distinta para el arquero (preparada ya pero oculta hasta su turno)
-      const gq = pickQuestion(targetYear, kq.id, gameState.usedQuestionIds);
-      gameState.usedQuestionIds.push(gq.id);
-
-      gameState.kickerQuestion = kq;
-      gameState.keeperQuestion = gq;
-      gameState.phase = "KICKER_TURN";
-      gameState.timeLeft = TURN_SECONDS;
-
-      playTone("whistle");
-      startHostTimer("KICKER_TURN");
-      renderHost();
-      broadcastState();
-    }
-
-    function startHostTimer(expectedPhase) {
-      clearInterval(hostTimerInterval);
-      hostTimerInterval = setInterval(() => {
-        if (gameState.phase !== expectedPhase) {
-          clearInterval(hostTimerInterval);
-          return;
-        }
-        gameState.timeLeft -= 1;
-        if (gameState.timeLeft <= 5 && gameState.timeLeft > 0) playTone("tick");
-
-        // Update countdown on host banner
-        renderHostBanner();
-
-        if (gameState.timeLeft <= 0) {
-          clearInterval(hostTimerInterval);
-          if (expectedPhase === "KICKER_TURN") {
-            resolveKickerTurn(-1, "Centro", true);
-          } else if (expectedPhase === "KEEPER_TURN") {
-            resolveKeeperTurn(-1, "Centro", true);
-          }
-        }
-      }, 1000);
-    }
-
-    function resolveKickerTurn(optionIndex, direction, timedOut) {
-      clearInterval(hostTimerInterval);
-      const q = gameState.kickerQuestion;
-      const chosenText = (!timedOut && optionIndex >= 0) ? q.options[optionIndex] : null;
-      const isCorrect = !timedOut && chosenText === q.correct;
-
-      gameState.kickerSubmission = { optionIndex, direction: direction || "Centro", isCorrect, timedOut };
-
-      if (!isCorrect) {
-        // Regla: Si contesta MAL o se acaba el tiempo -> Pelota desviada inmediata (0 goles, cambia el turno)
-        const reason = timedOut
-          ? "¡Se acabó el tiempo del pateador!"
-          : "El pateador no acertó la respuesta.";
-        finishPenaltyTurn("miss", "PELOTA DESVIADA ❌", reason);
-      } else {
-        // Regla: Si contesta BIEN -> se activa automáticamente el Arquero con pregunta distinta
-        gameState.phase = "KEEPER_TURN";
-        gameState.timeLeft = TURN_SECONDS;
-        playTone("whistle");
-        startHostTimer("KEEPER_TURN");
-        renderHost();
-        broadcastState();
-      }
-    }
-
-    function resolveKeeperTurn(optionIndex, direction, timedOut) {
-      clearInterval(hostTimerInterval);
-      const q = gameState.keeperQuestion;
-      const chosenText = (!timedOut && optionIndex >= 0) ? q.options[optionIndex] : null;
-      const isCorrect = !timedOut && chosenText === q.correct;
-
-      gameState.keeperSubmission = { optionIndex, direction: direction || "Centro", isCorrect, timedOut };
-
-      if (isCorrect) {
-        // Regla: Pateador BIEN y Arquero BIEN -> ¡Atajada!
-        finishPenaltyTurn("save", "¡ATAJADA! 🧤", "El arquero respondió bien y tapó el remate.");
-      } else {
-        // Regla: Pateador BIEN y Arquero MAL (o tiempo agotado) -> ¡GOOOL!
-        const reason = timedOut
-          ? "Se le acabó el tiempo al arquero."
-          : "El arquero falló la respuesta.";
-        finishPenaltyTurn("goal", "¡GOOOL! ⚽", reason);
-      }
-    }
-
-    function finishPenaltyTurn(result, title, subtitle) {
-      const team = gameState.currentTeam;
-      const teamName = team === "A" ? gameState.teamAName : gameState.teamBName;
-      const shotDir = gameState.kickerSubmission ? gameState.kickerSubmission.direction : "Centro";
-
-      if (team === "A") {
-        gameState.kicksA.push(result);
-        if (result === "goal") gameState.scoreA += 1;
-      } else {
-        gameState.kicksB.push(result);
-        if (result === "goal") gameState.scoreB += 1;
-      }
-
-      gameState.history.unshift({
-        turn: gameState.turnNumber,
-        teamName,
-        year: gameState.kickerQuestion.year,
-        result,
-        label: result === "goal" ? "⚽ Gol" : result === "save" ? "🧤 Atajada" : "❌ Desviada"
-      });
-
-      gameState.lastOutcome = {
-        result,
-        title,
-        subtitle,
-        shotDir,
-        kickerQ: { q: gameState.kickerQuestion.q, correct: gameState.kickerQuestion.correct },
-        keeperQ: gameState.keeperSubmission ? { q: gameState.keeperQuestion.q, correct: gameState.keeperQuestion.correct } : null
-      };
-
-      // Play sound & animate goal
-      playTone(result);
-      animateGoalResult(result, shotDir);
-
-      // Check match end / sudden death
-      const lenA = gameState.kicksA.length;
-      const lenB = gameState.kicksB.length;
-      const maxP = gameState.maxPenalties;
-
-      let matchEnded = false;
-      if (lenA === lenB && lenA >= maxP) {
-        if (gameState.scoreA !== gameState.scoreB) {
-          matchEnded = true;
-        } else if (gameState.suddenDeathEnabled) {
-          gameState.isSuddenDeath = true;
-        } else {
-          matchEnded = true; // Empate sin muerte súbita
-        }
-      }
-
-      if (matchEnded) {
-        gameState.phase = "MATCH_OVER";
-        const winnerText = gameState.scoreA > gameState.scoreB
-          ? `🏆 ¡Ganó ${gameState.teamAName}!`
-          : gameState.scoreB > gameState.scoreA
-            ? `🏆 ¡Ganó ${gameState.teamBName}!`
-            : "🤝 ¡Empate final!";
-        gameState.lastOutcome.subtitle = `${subtitle} · ${winnerText}`;
-      } else {
-        gameState.phase = "RESULT";
-        // Cambia el turno
-        gameState.currentTeam = team === "A" ? "B" : "A";
-      }
-
-      renderHost();
-      broadcastState();
-    }
-
-    /* =========================================================================
-       ANIMACIÓN DEL ARCO Y PELOTA (COMPARTIDA: HOST, PATEADOR, ARQUERO Y PRÁCTICA)
-       ========================================================================= */
+    /* ---------------- ANIMACIÓN DEL ARCO Y PELOTA ---------------- */
     function mountMiniStadium(containerId, prefix) {
       const wrap = document.getElementById(containerId);
       if (!wrap) return;
       wrap.innerHTML = `
-        <div class="stadium-stage" style="min-height: 210px; margin-bottom: 12px;">
+        <div class="stadium-stage" style="min-height: 220px; margin-bottom: 12px;">
+          <div class="stage-banner" id="${prefix}-stage-banner">
+            <span>⚽ Listo para patear</span>
+          </div>
           <svg class="stadium-svg" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
             <rect x="0" y="0" width="800" height="190" fill="#0284C7" />
             <rect x="0" y="128" width="800" height="62" fill="#1E293B" />
@@ -2377,6 +2125,9 @@
             <rect x="220" y="138" width="160" height="10" rx="5" fill="#FACC15" opacity="0.85" />
             <rect x="410" y="138" width="160" height="10" rx="5" fill="#DC2626" opacity="0.85" />
             <rect x="590" y="138" width="170" height="10" rx="5" fill="#2563EB" opacity="0.85" />
+            <text x="400" y="172" text-anchor="middle" fill="#F8FAFC" font-size="16" font-weight="800" font-family="sans-serif" opacity="0.9">
+              COLEGIO PAULO FREIRE · 30 AÑOS
+            </text>
             <rect x="0" y="190" width="800" height="260" fill="#16A34A" />
             <polygon points="150,240 650,240 730,395 70,395" fill="none" stroke="rgba(255,255,255,0.65)" stroke-width="4" />
             <ellipse cx="400" cy="365" rx="8" ry="4" fill="#FFFFFF" />
@@ -2409,7 +2160,7 @@
       `;
     }
 
-    function resetGoalAnimation(prefix = "host") {
+    function resetGoalAnimation(prefix = "player-mini") {
       const keeper = document.getElementById(`${prefix}-keeper`);
       const ball = document.getElementById(`${prefix}-ball`);
       const splash = document.getElementById(`${prefix}-result-splash`);
@@ -2452,13 +2203,9 @@
       }, 450);
     }
 
-    function animateGoalResult(result, shotDir) {
-      if (!gameState.lastOutcome) return;
-      animateGoalIn("host", result, shotDir, gameState.lastOutcome.title, gameState.lastOutcome.subtitle);
-    }
-
     function renderDots(containerId, kicks, maxP) {
       const el = document.getElementById(containerId);
+      if (!el) return;
       el.innerHTML = "";
       const total = Math.max(maxP, kicks.length);
       for (let i = 0; i < total; i++) {
@@ -2470,106 +2217,11 @@
       }
     }
 
-    function renderHostBanner() {
-      const banner = document.getElementById("host-stage-banner");
-      const teamName = gameState.currentTeam === "A" ? gameState.teamAName : gameState.teamBName;
-      if (gameState.phase === "IDLE") {
-        banner.innerHTML = `<span>⚽ Listo para comenzar · Patea ${teamName}</span>`;
-      } else if (gameState.phase === "KICKER_TURN") {
-        banner.innerHTML = `<span>👟 Patea ${teamName} (Año ${gameState.kickerQuestion.year}) · ⏱️ ${gameState.timeLeft}s</span>`;
-      } else if (gameState.phase === "KEEPER_TURN") {
-        banner.innerHTML = `<span>🧤 ¡Respondió bien! Turno del Arquero · ⏱️ ${gameState.timeLeft}s</span>`;
-      } else if (gameState.phase === "RESULT") {
-        banner.innerHTML = `<span>${gameState.lastOutcome.title} · Próximo turno: ${teamName}</span>`;
-      } else if (gameState.phase === "MATCH_OVER") {
-        banner.innerHTML = `<span>🏆 ¡Tanda Finalizada!</span>`;
-      }
-    }
+    /* ---------------- UNIRSE COMO EQUIPO VERDE (HOST) O EQUIPO AZUL (CLIENTE) ---------------- */
+    document.getElementById("btn-join-team-a").addEventListener("click", () => startAsTeam("A"));
+    document.getElementById("btn-join-team-b").addEventListener("click", () => startAsTeam("B"));
 
-    function renderHost() {
-      document.getElementById("sb-name-a").textContent = gameState.teamAName;
-      document.getElementById("sb-name-b").textContent = gameState.teamBName;
-      document.getElementById("sb-score").textContent = `${gameState.scoreA} - ${gameState.scoreB}`;
-      document.getElementById("sb-round-info").textContent = gameState.isSuddenDeath
-        ? "🔥 MUERTE SÚBITA"
-        : `Tanda al mejor de ${gameState.maxPenalties}`;
-
-      document.getElementById("sb-turn-a").classList.toggle("hidden", gameState.currentTeam !== "A" || gameState.phase === "MATCH_OVER");
-      document.getElementById("sb-turn-b").classList.toggle("hidden", gameState.currentTeam !== "B" || gameState.phase === "MATCH_OVER");
-
-      renderDots("sb-dots-a", gameState.kicksA, gameState.maxPenalties);
-      renderDots("sb-dots-b", gameState.kicksB, gameState.maxPenalties);
-      renderHostBanner();
-
-      const infoBox = document.getElementById("host-turn-info");
-      const revealBox = document.getElementById("host-post-turn-reveal");
-      const startBtn = document.getElementById("btn-host-start-kick");
-
-      if (gameState.phase === "IDLE") {
-        infoBox.className = "alert-box alert-info";
-        infoBox.textContent = "Conectá al Pateador y al Arquero con el código de sala y presioná 'Iniciar Penal'.";
-        revealBox.classList.add("hidden");
-        startBtn.disabled = false;
-        startBtn.textContent = "⚽ Iniciar Penal";
-      } else if (gameState.phase === "KICKER_TURN") {
-        infoBox.className = "alert-box alert-warn";
-        infoBox.textContent = `Turno del Pateador (Año ${gameState.kickerQuestion.year}). La respuesta correcta está oculta hasta finalizar el tiro.`;
-        revealBox.classList.add("hidden");
-        startBtn.disabled = true;
-        startBtn.textContent = "⏳ Jugada en curso...";
-      } else if (gameState.phase === "KEEPER_TURN") {
-        infoBox.className = "alert-box alert-warn";
-        infoBox.textContent = `¡El pateador acertó! Ahora el Arquero tiene 15s para responder su pregunta (Año ${gameState.keeperQuestion.year}) y atajar.`;
-        revealBox.classList.add("hidden");
-        startBtn.disabled = true;
-        startBtn.textContent = "⏳ Arquero respondiendo...";
-      } else if (gameState.phase === "RESULT" || gameState.phase === "MATCH_OVER") {
-        infoBox.className = "alert-box " + (gameState.lastOutcome.result === "goal" ? "alert-success" : "alert-info");
-        infoBox.textContent = `${gameState.lastOutcome.title} — ${gameState.lastOutcome.subtitle}`;
-
-        let html = `<strong>Respuesta del Pateador:</strong> ${gameState.lastOutcome.kickerQ.correct}`;
-        if (gameState.lastOutcome.keeperQ) {
-          html += `<br><strong>Respuesta del Arquero:</strong> ${gameState.lastOutcome.keeperQ.correct}`;
-        }
-        revealBox.innerHTML = html;
-        revealBox.classList.remove("hidden");
-
-        startBtn.disabled = false;
-        startBtn.textContent = gameState.phase === "MATCH_OVER" ? "🏆 Nueva Tanda" : "⚽ Siguiente Penal";
-      }
-
-      // History
-      const histEl = document.getElementById("host-history");
-      if (gameState.history.length === 0) {
-        histEl.innerHTML = `<p style="color: var(--muted); font-size: 0.9rem;">Todavía no se patearon penales.</p>`;
-      } else {
-        histEl.innerHTML = gameState.history.map(h => `
-          <div class="history-item">
-            <span><strong>#${h.turn} ${h.teamName}</strong> (Año ${h.year})</span>
-            <strong>${h.label}</strong>
-          </div>
-        `).join("");
-      }
-    }
-
-    /* =========================================================================
-       CLIENTES: EQUIPOS CON ROTACIÓN AUTOMÁTICA (PATEADOR <-> ARQUERO)
-       ========================================================================= */
-    let clientConn = null;
-    let clientTeam = "A";
-    let clientRole = "kicker";
-    let clientTimerInterval = null;
-    let clientLocalTimeLeft = TURN_SECONDS;
-    let clientSelectedOption = null;
-    let clientSelectedDir = null;
-    let clientCurrentTurnRendered = -1;
-    let clientCurrentPhaseRendered = "";
-    let clientLastAnimatedTurn = -1;
-
-    document.getElementById("btn-join-team-a").addEventListener("click", () => joinAsClient("A"));
-    document.getElementById("btn-join-team-b").addEventListener("click", () => joinAsClient("B"));
-
-    function joinAsClient(team) {
+    function startAsTeam(team) {
       clearLobbyError();
       if (!ensurePeerJSLoaded()) return;
 
@@ -2577,121 +2229,478 @@
       document.getElementById("input-room-code").value = code;
       cleanupNetwork();
 
-      clientTeam = team;
-      clientRole = team === "A" ? "kicker" : "keeper";
-      clientCurrentTurnRendered = -1;
-      clientCurrentPhaseRendered = "";
-      clientLastAnimatedTurn = -1;
+      myTeam = team;
+      playerCurrentTurnRendered = -1;
+      playerLastAnimatedTurn = -1;
       showView("player");
       mountMiniStadium("player-stadium-wrap", "player-mini");
 
+      document.getElementById("player-room-badge").textContent = code;
       const teamBadge = document.getElementById("player-team-badge");
       teamBadge.textContent = team === "A" ? "🟢 Equipo Verde" : "🔵 Equipo Azul";
       teamBadge.className = team === "A" ? "pill online" : "pill warn";
-      document.getElementById("player-turn-role-badge").textContent = "Conectando...";
-      document.getElementById("player-mini-score").textContent = "0 - 0";
 
-      const waitCard = document.getElementById("player-waiting-card");
-      const activeCard = document.getElementById("player-active-card");
-      const resCard = document.getElementById("player-result-card");
-      waitCard.classList.remove("hidden");
-      activeCard.classList.add("hidden");
-      resCard.classList.add("hidden");
+      document.getElementById("pl-host-config").classList.toggle("hidden", team !== "A");
 
-      document.getElementById("player-wait-title").textContent = "Conectando a la sala...";
-      document.getElementById("player-wait-desc").textContent = `Buscando sala ${code}...`;
-      connBadge.textContent = `Conectando (${code})...`;
-      connBadge.className = "pill warn";
+      if (team === "A") {
+        // Equipo Verde crea la sala y mantiene el estado autoritativo
+        gameState = createInitialGameState();
+        syncConfigFromPlayerInputs();
+        connBadge.textContent = `Sala ${code} · Creando...`;
+        connBadge.className = "pill warn";
 
-      peer = new Peer({ debug: 1 });
-      peer.on("open", () => {
-        clientConn = peer.connect(PEER_PREFIX + code, { reliable: true });
-
-        clientConn.on("open", () => {
-          connBadge.textContent = `Sala ${code} · ${team === "A" ? "🟢 Equipo Verde" : "🔵 Equipo Azul"}`;
+        peer = new Peer(PEER_PREFIX + code, { debug: 1 });
+        peer.on("open", () => {
+          connBadge.textContent = `Sala ${code} · 🟢 Equipo Verde`;
           connBadge.className = "pill online";
-          clientConn.send({ type: "REGISTER", team });
+          renderTeamView(buildStatePacketFor("A"));
         });
 
-        clientConn.on("data", (msg) => {
-          if (msg && msg.type === "STATE_UPDATE") {
-            renderClientState(msg);
+        peer.on("connection", (conn) => {
+          conn.on("data", (msg) => handleHostMsgFromTeamB(conn, msg));
+          conn.on("close", () => {
+            hostConnections = hostConnections.filter(c => c.conn !== conn);
+            renderTeamView(buildStatePacketFor("A"));
+          });
+        });
+
+        peer.on("error", (err) => {
+          if (err.type === "unavailable-id") {
+            connBadge.textContent = "Código en uso";
+            connBadge.className = "pill offline";
+            alert(`El código "${code}" ya está en uso. Volvé al inicio y generá un código nuevo.`);
+          } else {
+            connBadge.textContent = "Error de red";
+            connBadge.className = "pill offline";
           }
         });
+      } else {
+        // Equipo Azul se une a la sala del Equipo Verde
+        connBadge.textContent = `Conectando (${code})...`;
+        connBadge.className = "pill warn";
+        document.getElementById("player-rival-status").textContent = "Conectando...";
+        document.getElementById("player-rival-status").className = "pill warn";
 
-        clientConn.on("close", () => {
-          connBadge.textContent = "Desconectado";
-          connBadge.className = "pill offline";
-          document.getElementById("player-wait-title").textContent = "Se perdió la conexión con la sala";
-          document.getElementById("player-wait-desc").textContent = "Volvé al inicio para reconectarte.";
-          waitCard.classList.remove("hidden");
-          activeCard.classList.add("hidden");
-          resCard.classList.add("hidden");
+        peer = new Peer({ debug: 1 });
+        peer.on("open", () => {
+          clientConn = peer.connect(PEER_PREFIX + code, { reliable: true });
+          clientConn.on("open", () => {
+            connBadge.textContent = `Sala ${code} · 🔵 Equipo Azul`;
+            connBadge.className = "pill online";
+            clientConn.send({ type: "REGISTER", team: "B" });
+          });
+
+          clientConn.on("data", (msg) => {
+            if (!msg) return;
+            if (msg.type === "STATE_UPDATE") {
+              renderTeamView(msg);
+            } else if (msg.type === "TICK") {
+              updatePlayerTimerDisplay(msg.timeLeft);
+            }
+          });
+
+          clientConn.on("close", () => {
+            connBadge.textContent = "Desconectado";
+            connBadge.className = "pill offline";
+            document.getElementById("player-rival-status").textContent = "Rival desconectado";
+            document.getElementById("player-rival-status").className = "pill offline";
+          });
         });
-      });
 
-      peer.on("error", () => {
-        connBadge.textContent = "Error de conexión";
-        connBadge.className = "pill offline";
-        document.getElementById("player-wait-title").textContent = "No se encontró la sala";
-        document.getElementById("player-wait-desc").textContent = `Verificá que la Pantalla Principal esté abierta con el código ${code}.`;
+        peer.on("error", () => {
+          connBadge.textContent = "No se encontró sala";
+          connBadge.className = "pill offline";
+          document.getElementById("player-wait-title").textContent = "No se encontró la sala";
+          document.getElementById("player-wait-desc").textContent = `Verificá que Equipo Verde haya creado la sala ${code}.`;
+        });
+      }
+    }
+
+    function syncConfigFromPlayerInputs() {
+      gameState.maxPenalties = parseInt(document.getElementById("pl-cfg-penalties").value, 10) || 5;
+      gameState.yearFilter = document.getElementById("pl-cfg-year").value || "ALL";
+    }
+
+    ["pl-cfg-penalties", "pl-cfg-year"].forEach(id => {
+      document.getElementById(id).addEventListener("change", () => {
+        if (myTeam !== "A") return;
+        syncConfigFromPlayerInputs();
+        broadcastStateToTeamB();
+        renderTeamView(buildStatePacketFor("A"));
+      });
+    });
+
+    function handleHostMsgFromTeamB(conn, msg) {
+      if (!msg || !msg.type) return;
+
+      if (msg.type === "REGISTER") {
+        hostConnections = hostConnections.filter(c => c.conn !== conn);
+        hostConnections.push({ conn, team: "B" });
+        broadcastStateToTeamB();
+        renderTeamView(buildStatePacketFor("A"));
+        return;
+      }
+
+      if (msg.type === "REQUEST_START" && (gameState.phase === "IDLE" || gameState.phase === "RESULT" || gameState.phase === "MATCH_OVER")) {
+        if (gameState.phase === "MATCH_OVER") resetMatchHost();
+        else startParallelTurn();
+        return;
+      }
+
+      if (msg.type === "REQUEST_RESET") {
+        resetMatchHost();
+        return;
+      }
+
+      if (msg.type === "SUBMIT_PLAY" && gameState.phase === "PLAYING_TURN") {
+        recordSubmission("B", msg.optionIndex, msg.direction, false);
+      }
+    }
+
+    function sanitizeQuestionForClient(q) {
+      if (!q) return null;
+      return {
+        id: q.id,
+        year: q.year,
+        milestone: q.milestone,
+        q: q.q,
+        options: q.options
+      };
+    }
+
+    function buildStatePacketFor(targetTeam) {
+      const activeRole = targetTeam === gameState.currentTeam ? "kicker" : "keeper";
+      const mySub = activeRole === "kicker" ? gameState.kickerSubmission : gameState.keeperSubmission;
+      const rivalSub = activeRole === "kicker" ? gameState.keeperSubmission : gameState.kickerSubmission;
+      const myQuestion = activeRole === "kicker" ? gameState.kickerQuestion : gameState.keeperQuestion;
+
+      return {
+        type: "STATE_UPDATE",
+        phase: gameState.phase,
+        targetTeam,
+        activeRole,
+        currentTeam: gameState.currentTeam,
+        kickingTeamName: gameState.currentTeam === "A" ? gameState.teamAName : gameState.teamBName,
+        teamAName: gameState.teamAName,
+        teamBName: gameState.teamBName,
+        scoreA: gameState.scoreA,
+        scoreB: gameState.scoreB,
+        kicksA: gameState.kicksA,
+        kicksB: gameState.kicksB,
+        maxPenalties: gameState.maxPenalties,
+        isSuddenDeath: gameState.isSuddenDeath,
+        turnNumber: gameState.turnNumber,
+        timeLeft: gameState.timeLeft,
+        rivalConnected: hostConnections.length > 0,
+        mySubmitted: !!mySub,
+        rivalSubmitted: !!rivalSub,
+        question: gameState.phase === "PLAYING_TURN" ? sanitizeQuestionForClient(myQuestion) : null,
+        lastOutcome: (gameState.phase === "RESULT" || gameState.phase === "MATCH_OVER") ? gameState.lastOutcome : null
+      };
+    }
+
+    function broadcastStateToTeamB() {
+      const pkt = buildStatePacketFor("B");
+      hostConnections.forEach(({ conn }) => {
+        try { conn.send(pkt); } catch {}
       });
     }
 
-    function renderClientState(state) {
-      const waitCard = document.getElementById("player-waiting-card");
-      const activeCard = document.getElementById("player-active-card");
-      const resCard = document.getElementById("player-result-card");
+    function broadcastTick(t) {
+      hostConnections.forEach(({ conn }) => {
+        try { conn.send({ type: "TICK", timeLeft: t }); } catch {}
+      });
+    }
 
-      clientRole = state.activeRole;
+    /* ---------------- CONTROLES DE TANDA ---------------- */
+    document.getElementById("btn-pl-start-kick").addEventListener("click", () => {
+      if (myTeam === "A") {
+        if (gameState.phase === "PLAYING_TURN") return;
+        if (gameState.phase === "MATCH_OVER") resetMatchHost();
+        else startParallelTurn();
+      } else if (clientConn) {
+        clientConn.send({ type: "REQUEST_START" });
+      }
+    });
 
-      // Actualizar cabecera del equipo y marcador en el dispositivo
-      const teamBadge = document.getElementById("player-team-badge");
-      teamBadge.textContent = (clientTeam === "A" ? "🟢 " : "🔵 ") + (state.myTeamName || "Tu Equipo");
-      document.getElementById("player-mini-score").textContent =
-        `${state.scoreA ?? 0} - ${state.scoreB ?? 0}`;
+    document.getElementById("btn-pl-reset").addEventListener("click", () => {
+      if (myTeam === "A") resetMatchHost();
+      else if (clientConn) clientConn.send({ type: "REQUEST_RESET" });
+    });
+
+    function resetMatchHost() {
+      clearInterval(hostTimerInterval);
+      gameState = createInitialGameState();
+      syncConfigFromPlayerInputs();
+      resetGoalAnimation("player-mini");
+      broadcastStateToTeamB();
+      renderTeamView(buildStatePacketFor("A"));
+    }
+
+    function startParallelTurn() {
+      syncConfigFromPlayerInputs();
+      resetGoalAnimation("player-mini");
+
+      gameState.turnNumber += 1;
+      gameState.kickerSubmission = null;
+      gameState.keeperSubmission = null;
+      gameState.lastOutcome = null;
+
+      const targetYear = gameState.yearFilter === "ALL"
+        ? YEARS_LIST[(gameState.turnNumber - 1) % YEARS_LIST.length]
+        : gameState.yearFilter;
+
+      const kq = pickQuestion(targetYear, null, gameState.usedQuestionIds);
+      gameState.usedQuestionIds.push(kq.id);
+      if (gameState.usedQuestionIds.length > QUESTION_BANK.length - 4) {
+        gameState.usedQuestionIds = [kq.id];
+      }
+
+      const gq = pickQuestion(targetYear, kq.id, gameState.usedQuestionIds);
+      gameState.usedQuestionIds.push(gq.id);
+
+      gameState.kickerQuestion = kq;
+      gameState.keeperQuestion = gq;
+      gameState.phase = "PLAYING_TURN";
+      gameState.timeLeft = TURN_SECONDS;
+
+      playTone("whistle");
+      startHostParallelTimer();
+      broadcastStateToTeamB();
+      renderTeamView(buildStatePacketFor("A"));
+    }
+
+    function startHostParallelTimer() {
+      clearInterval(hostTimerInterval);
+      hostTimerInterval = setInterval(() => {
+        if (gameState.phase !== "PLAYING_TURN") {
+          clearInterval(hostTimerInterval);
+          return;
+        }
+        gameState.timeLeft -= 1;
+        if (gameState.timeLeft <= 5 && gameState.timeLeft > 0) playTone("tick");
+
+        updatePlayerTimerDisplay(gameState.timeLeft);
+        broadcastTick(gameState.timeLeft);
+
+        if (gameState.timeLeft <= 0) {
+          clearInterval(hostTimerInterval);
+          if (!gameState.kickerSubmission) {
+            gameState.kickerSubmission = { optionIndex: -1, direction: "Centro", timedOut: true };
+          }
+          if (!gameState.keeperSubmission) {
+            gameState.keeperSubmission = { optionIndex: -1, direction: "Centro", timedOut: true };
+          }
+          resolveParallelTurn();
+        }
+      }, 1000);
+    }
+
+    function recordSubmission(team, optionIndex, direction, timedOut) {
+      if (gameState.phase !== "PLAYING_TURN") return;
+      const isKicker = team === gameState.currentTeam;
+      const sub = { optionIndex, direction: direction || "Centro", timedOut };
+
+      if (isKicker && !gameState.kickerSubmission) {
+        gameState.kickerSubmission = sub;
+      } else if (!isKicker && !gameState.keeperSubmission) {
+        gameState.keeperSubmission = sub;
+      }
+
+      // Si los dos ya contestaron antes de los 30s -> ¡se patea inmediatamente!
+      if (gameState.kickerSubmission && gameState.keeperSubmission) {
+        clearInterval(hostTimerInterval);
+        resolveParallelTurn();
+      } else {
+        broadcastStateToTeamB();
+        renderTeamView(buildStatePacketFor("A"));
+      }
+    }
+
+    function resolveParallelTurn() {
+      const kq = gameState.kickerQuestion;
+      const gq = gameState.keeperQuestion;
+      const ks = gameState.kickerSubmission;
+      const gs = gameState.keeperSubmission;
+
+      const kCorrect = !ks.timedOut && ks.optionIndex >= 0 && kq.options[ks.optionIndex] === kq.correct;
+      const gCorrect = !gs.timedOut && gs.optionIndex >= 0 && gq.options[gs.optionIndex] === gq.correct;
+
+      let result, title, subtitle;
+      if (!kCorrect) {
+        result = "miss";
+        title = "PELOTA DESVIADA ❌";
+        subtitle = ks.timedOut ? "¡Se acabó el tiempo del pateador!" : "El pateador no acertó la respuesta.";
+      } else if (gCorrect) {
+        result = "save";
+        title = "¡ATAJADA! 🧤";
+        subtitle = "¡Ambos acertaron! El arquero tapó el remate.";
+      } else {
+        result = "goal";
+        title = "¡GOOOL! ⚽";
+        subtitle = gs.timedOut ? "El pateador acertó y al arquero se le acabó el tiempo." : "El pateador acertó y el arquero falló.";
+      }
+
+      const team = gameState.currentTeam;
+      const shotDir = ks.direction || "Centro";
+
+      if (team === "A") {
+        gameState.kicksA.push(result);
+        if (result === "goal") gameState.scoreA += 1;
+      } else {
+        gameState.kicksB.push(result);
+        if (result === "goal") gameState.scoreB += 1;
+      }
+
+      gameState.lastOutcome = {
+        result,
+        title,
+        subtitle,
+        shotDir,
+        kickerQ: { q: kq.q, correct: kq.correct },
+        keeperQ: { q: gq.q, correct: gq.correct }
+      };
+
+      const lenA = gameState.kicksA.length;
+      const lenB = gameState.kicksB.length;
+      const maxP = gameState.maxPenalties;
+      let matchEnded = false;
+
+      if (lenA === lenB && lenA >= maxP) {
+        if (gameState.scoreA !== gameState.scoreB) {
+          matchEnded = true;
+        } else if (gameState.suddenDeathEnabled) {
+          gameState.isSuddenDeath = true;
+        } else {
+          matchEnded = true;
+        }
+      }
+
+      if (matchEnded) {
+        gameState.phase = "MATCH_OVER";
+        const winnerText = gameState.scoreA > gameState.scoreB
+          ? `🏆 ¡Ganó ${gameState.teamAName}!`
+          : gameState.scoreB > gameState.scoreA
+            ? `🏆 ¡Ganó ${gameState.teamBName}!`
+            : "🤝 ¡Empate final!";
+        gameState.lastOutcome.subtitle = `${subtitle} · ${winnerText}`;
+      } else {
+        gameState.phase = "RESULT";
+        gameState.currentTeam = team === "A" ? "B" : "A";
+      }
+
+      broadcastStateToTeamB();
+      renderTeamView(buildStatePacketFor("A"));
+    }
+
+    /* ---------------- RENDERIZADO DE PANTALLA DIVIDIDA (AMBOS EQUIPOS) ---------------- */
+    function renderTeamView(state) {
+      // Marcador superior
+      document.getElementById("pl-sb-name-a").textContent = state.teamAName;
+      document.getElementById("pl-sb-name-b").textContent = state.teamBName;
+      document.getElementById("pl-sb-score").textContent = `${state.scoreA} - ${state.scoreB}`;
+      document.getElementById("pl-sb-round").textContent = state.isSuddenDeath
+        ? "🔥 MUERTE SÚBITA"
+        : `Tanda al mejor de ${state.maxPenalties}`;
+
+      document.getElementById("pl-sb-turn-a").classList.toggle("hidden", state.currentTeam !== "A" || state.phase === "MATCH_OVER");
+      document.getElementById("pl-sb-turn-b").classList.toggle("hidden", state.currentTeam !== "B" || state.phase === "MATCH_OVER");
+
+      renderDots("pl-sb-dots-a", state.kicksA || [], state.maxPenalties || 5);
+      renderDots("pl-sb-dots-b", state.kicksB || [], state.maxPenalties || 5);
+
+      const rivalPill = document.getElementById("player-rival-status");
+      if (myTeam === "A") {
+        rivalPill.textContent = state.rivalConnected ? "🔵 Azul: Conectado ✅" : "🔵 Azul: Esperando conexión";
+        rivalPill.className = state.rivalConnected ? "pill online" : "pill warn";
+      } else {
+        rivalPill.textContent = "🟢 Verde: Conectado ✅";
+        rivalPill.className = "pill online";
+      }
 
       const roleBadge = document.getElementById("player-turn-role-badge");
       if (state.phase === "RESULT" || state.phase === "MATCH_OVER") {
         roleBadge.textContent = state.phase === "MATCH_OVER" ? "🏆 Fin de tanda" : "🎬 Resultado";
       } else {
-        roleBadge.textContent = clientRole === "kicker" ? "👟 Te toca PATEAR" : "🧤 Te toca ATAJAR";
+        roleBadge.textContent = state.activeRole === "kicker" ? "👟 Te toca PATEAR" : "🧤 Te toca ATAJAR";
       }
 
-      const myTurn = (clientRole === "kicker" && state.phase === "KICKER_TURN") ||
-                     (clientRole === "keeper" && state.phase === "KEEPER_TURN");
+      const stageBanner = document.getElementById("player-mini-stage-banner");
+      const stageStatus = document.getElementById("player-stage-status");
+      const startBtn = document.getElementById("btn-pl-start-kick");
 
-      if (myTurn && state.question) {
-        waitCard.classList.add("hidden");
+      const waitCard = document.getElementById("player-waiting-card");
+      const activeCard = document.getElementById("player-active-card");
+      const resCard = document.getElementById("player-result-card");
+
+      if (state.phase === "IDLE") {
+        resetGoalAnimation("player-mini");
+        if (stageBanner) stageBanner.innerHTML = `<span>⚽ Patea ${state.kickingTeamName}</span>`;
+        stageStatus.className = "alert-box alert-info";
+        stageStatus.textContent = `Turno inicial: patea ${state.kickingTeamName}. Ambos responden en paralelo (30s).`;
+        startBtn.disabled = false;
+        startBtn.textContent = "⚽ Iniciar Penal";
+
+        activeCard.classList.add("hidden");
         resCard.classList.add("hidden");
-        activeCard.classList.remove("hidden");
+        waitCard.classList.remove("hidden");
+        document.getElementById("player-wait-icon").textContent = state.activeRole === "kicker" ? "👟" : "🧤";
+        document.getElementById("player-wait-title").textContent =
+          state.activeRole === "kicker" ? "¡Te toca PATEAR!" : "¡Te toca ATAJAR!";
+        document.getElementById("player-wait-desc").textContent =
+          "Presioná 'Iniciar Penal' cuando ambos equipos estén listos.";
+        return;
+      }
 
-        // Only re-render question UI if this is a new turn/phase
-        if (clientCurrentTurnRendered !== state.turnNumber || clientCurrentPhaseRendered !== state.phase) {
-          clientCurrentTurnRendered = state.turnNumber;
-          clientCurrentPhaseRendered = state.phase;
-          setupActivePlayerQuestion(state.question, state.kickingTeamName, state.timeLeft);
+      if (state.phase === "PLAYING_TURN") {
+        const rivalText = state.rivalSubmitted ? "⚡ ¡El rival ya contestó!" : "⏳ Rival respondiendo...";
+        if (stageBanner) stageBanner.innerHTML = `<span>⏱️ ${state.timeLeft}s · ${rivalText}</span>`;
+        stageStatus.className = "alert-box alert-warn";
+        stageStatus.textContent = `Jugada en paralelo (30s): si los dos contestan antes, ¡se patea al instante! (${rivalText})`;
+        startBtn.disabled = true;
+        startBtn.textContent = "⏳ Penal en curso...";
+
+        updatePlayerTimerDisplay(state.timeLeft);
+
+        if (state.mySubmitted) {
+          activeCard.classList.add("hidden");
+          resCard.classList.add("hidden");
+          waitCard.classList.remove("hidden");
+          document.getElementById("player-wait-icon").textContent = "✅";
+          document.getElementById("player-wait-title").textContent = "¡Jugada enviada!";
+          document.getElementById("player-wait-desc").textContent =
+            "Esperando al rival... En cuanto conteste (o termine el tiempo) se patea.";
+        } else if (state.question) {
+          waitCard.classList.add("hidden");
+          resCard.classList.add("hidden");
+          activeCard.classList.remove("hidden");
+          if (playerCurrentTurnRendered !== state.turnNumber) {
+            playerCurrentTurnRendered = state.turnNumber;
+            setupActivePlayerQuestion(state.question, state.activeRole);
+          }
         }
         return;
       }
 
-      clearInterval(clientTimerInterval);
-      activeCard.classList.add("hidden");
-
       if ((state.phase === "RESULT" || state.phase === "MATCH_OVER") && state.lastOutcome) {
+        if (stageBanner) stageBanner.innerHTML = `<span>${state.lastOutcome.title}</span>`;
+        stageStatus.className = "alert-box " + (state.lastOutcome.result === "goal" ? "alert-success" : "alert-info");
+        stageStatus.textContent = state.lastOutcome.subtitle;
+        startBtn.disabled = false;
+        startBtn.textContent = state.phase === "MATCH_OVER" ? "🏆 Nueva Tanda" : "⚽ Siguiente Penal";
+
         waitCard.classList.add("hidden");
+        activeCard.classList.add("hidden");
         resCard.classList.remove("hidden");
+
         document.getElementById("player-res-title").textContent = state.lastOutcome.title;
         document.getElementById("player-res-desc").textContent = state.lastOutcome.subtitle;
+        document.getElementById("player-res-reveal").innerHTML =
+          `<strong>Respuesta del Pateador:</strong> ${state.lastOutcome.kickerQ.correct}<br>` +
+          `<strong>Respuesta del Arquero:</strong> ${state.lastOutcome.keeperQ.correct}`;
 
-        let html = `<strong>Respuesta del Pateador:</strong> ${state.lastOutcome.kickerQ.correct}`;
-        if (state.lastOutcome.keeperQ) {
-          html += `<br><strong>Respuesta del Arquero:</strong> ${state.lastOutcome.keeperQ.correct}`;
-        }
-        document.getElementById("player-res-reveal").innerHTML = html;
-
-        if (clientLastAnimatedTurn !== state.turnNumber) {
-          clientLastAnimatedTurn = state.turnNumber;
+        if (playerLastAnimatedTurn !== state.turnNumber) {
+          playerLastAnimatedTurn = state.turnNumber;
           playTone(state.lastOutcome.result);
           animateGoalIn(
             "player-mini",
@@ -2701,41 +2710,20 @@
             state.lastOutcome.subtitle
           );
         }
-        return;
-      }
-
-      // Waiting states
-      resCard.classList.add("hidden");
-      waitCard.classList.remove("hidden");
-
-      if (clientRole === "keeper" && state.phase === "KICKER_TURN") {
-        document.getElementById("player-wait-icon").textContent = "🧤";
-        document.getElementById("player-wait-title").textContent = "El rival está preparando el remate...";
-        document.getElementById("player-wait-desc").textContent = `Patea ${state.kickingTeamName}. Si acierta, te activarás automáticamente para intentar atajar.`;
-      } else if (clientRole === "kicker" && state.phase === "KEEPER_TURN") {
-        document.getElementById("player-wait-icon").textContent = "⚽";
-        document.getElementById("player-wait-title").textContent = "¡Respondiste bien! Esperando al arquero...";
-        document.getElementById("player-wait-desc").textContent = "El equipo rival está intentando atajar tu remate.";
-      } else {
-        document.getElementById("player-wait-icon").textContent = clientRole === "kicker" ? "👟" : "🧤";
-        document.getElementById("player-wait-title").textContent =
-          clientRole === "kicker" ? "¡Próximo turno: te toca PATEAR!" : "¡Próximo turno: te toca ATAJAR!";
-        document.getElementById("player-wait-desc").textContent = `Esperando que la Pantalla Principal inicie el penal (Patea ${state.kickingTeamName}).`;
       }
     }
 
-    function setupActivePlayerQuestion(q, teamName, initialTime) {
-      clientSelectedOption = null;
-      clientSelectedDir = null;
-      clientLocalTimeLeft = initialTime || TURN_SECONDS;
+    function setupActivePlayerQuestion(q, role) {
+      playerSelectedOption = null;
+      playerSelectedDir = null;
 
       document.getElementById("player-year-badge").textContent = `📅 Año ${q.year} · ${q.milestone}`;
       document.getElementById("player-role-pill").textContent =
-        clientRole === "kicker" ? `👟 Patea: ${teamName}` : "🧤 ¡Atajá el penal!";
+        role === "kicker" ? "👟 Sos PATEADOR" : "🧤 Sos ARQUERO";
       document.getElementById("player-dir-label").textContent =
-        clientRole === "kicker" ? "Elegí la dirección del tiro" : "Elegí hacia dónde te tirás";
+        role === "kicker" ? "Elegí la dirección del tiro" : "Elegí hacia dónde te tirás";
       document.getElementById("btn-player-submit").textContent =
-        clientRole === "kicker" ? "¡PATEAR! ⚽" : "¡ATAJAR! 🧤";
+        role === "kicker" ? "¡PATEAR! ⚽" : "¡ATAJAR! 🧤";
       document.getElementById("btn-player-submit").disabled = true;
 
       document.getElementById("player-question-text").textContent = q.q;
@@ -2749,7 +2737,7 @@
         btn.className = "option-btn";
         btn.innerHTML = `<span class="option-letter">${letters[idx]}</span><span>${opt}</span>`;
         btn.addEventListener("click", () => {
-          clientSelectedOption = idx;
+          playerSelectedOption = idx;
           grid.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
           btn.classList.add("selected");
           updatePlayerSubmitBtn();
@@ -2760,47 +2748,61 @@
       document.querySelectorAll("#view-player .dir-btn").forEach(b => {
         b.classList.remove("selected");
         b.onclick = () => {
-          clientSelectedDir = b.dataset.dir;
+          playerSelectedDir = b.dataset.dir;
           document.querySelectorAll("#view-player .dir-btn").forEach(x => x.classList.remove("selected"));
           b.classList.add("selected");
           updatePlayerSubmitBtn();
         };
       });
-
-      updateClientTimerUI();
-      clearInterval(clientTimerInterval);
-      clientTimerInterval = setInterval(() => {
-        clientLocalTimeLeft = Math.max(0, clientLocalTimeLeft - 1);
-        updateClientTimerUI();
-        if (clientLocalTimeLeft <= 0) clearInterval(clientTimerInterval);
-      }, 1000);
     }
 
     function updatePlayerSubmitBtn() {
       document.getElementById("btn-player-submit").disabled =
-        clientSelectedOption === null || clientSelectedDir === null;
+        playerSelectedOption === null || playerSelectedDir === null;
     }
 
-    function updateClientTimerUI() {
-      document.getElementById("player-timer-num").textContent = clientLocalTimeLeft;
-      const pct = Math.max(0, (clientLocalTimeLeft / TURN_SECONDS) * 100);
+    function updatePlayerTimerDisplay(t) {
+      const val = Math.max(0, t);
+      document.getElementById("player-timer-num").textContent = val;
+      const pct = Math.max(0, (val / TURN_SECONDS) * 100);
       const bar = document.getElementById("player-timer-bar");
       const box = document.getElementById("player-timer-box");
-      bar.style.width = pct + "%";
-      const urgent = clientLocalTimeLeft <= 5;
-      bar.classList.toggle("urgent", urgent);
-      box.classList.toggle("urgent", urgent);
+      if (bar) {
+        bar.style.width = pct + "%";
+        bar.classList.toggle("urgent", val <= 5);
+      }
+      if (box) box.classList.toggle("urgent", val <= 5);
+
+      const banner = document.getElementById("player-mini-stage-banner");
+      if (banner && gameState.phase === "PLAYING_TURN") {
+        const rivalDone = myTeam === "A" ? !!gameState.keeperSubmission && gameState.currentTeam === "A" || !!gameState.kickerSubmission && gameState.currentTeam === "B" : false;
+        // Keep simple countdown in banner
+        const firstSpan = banner.querySelector("span");
+        if (firstSpan && firstSpan.textContent.includes("⏱️")) {
+          firstSpan.textContent = firstSpan.textContent.replace(/⏱️ \d+s/, `⏱️ ${val}s`);
+        }
+      }
     }
 
     document.getElementById("btn-player-submit").addEventListener("click", () => {
-      if (clientSelectedOption === null || clientSelectedDir === null || !clientConn) return;
-      clearInterval(clientTimerInterval);
+      if (playerSelectedOption === null || playerSelectedDir === null) return;
       document.getElementById("btn-player-submit").disabled = true;
-      clientConn.send({
-        type: clientRole === "kicker" ? "KICKER_SUBMIT" : "KEEPER_SUBMIT",
-        optionIndex: clientSelectedOption,
-        direction: clientSelectedDir
-      });
+
+      if (myTeam === "A") {
+        recordSubmission("A", playerSelectedOption, playerSelectedDir, false);
+      } else if (clientConn) {
+        clientConn.send({
+          type: "SUBMIT_PLAY",
+          optionIndex: playerSelectedOption,
+          direction: playerSelectedDir
+        });
+        // Feedback inmediato mientras llega el STATE_UPDATE
+        document.getElementById("player-active-card").classList.add("hidden");
+        document.getElementById("player-waiting-card").classList.remove("hidden");
+        document.getElementById("player-wait-icon").textContent = "✅";
+        document.getElementById("player-wait-title").textContent = "¡Jugada enviada!";
+        document.getElementById("player-wait-desc").textContent = "Esperando al rival...";
+      }
     });
 
     /* =========================================================================
