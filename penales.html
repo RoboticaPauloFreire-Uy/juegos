@@ -945,7 +945,24 @@
           />
           <button id="btn-random-code" class="btn btn-outline" type="button">🎲 Nuevo código</button>
         </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;">
+          <button type="button" class="btn btn-outline btn-sm quick-code-btn" data-code="FREIRE30">FREIRE30</button>
+          <button type="button" class="btn btn-outline btn-sm quick-code-btn" data-code="SALA1">SALA1</button>
+          <button type="button" class="btn btn-outline btn-sm quick-code-btn" data-code="SALA2">SALA2</button>
+          <button type="button" class="btn btn-outline btn-sm quick-code-btn" data-code="SALA3">SALA3</button>
+          <button type="button" class="btn btn-outline btn-sm quick-code-btn" data-code="SALA4">SALA4</button>
+        </div>
         <div id="lobby-alert" class="alert-box alert-error hidden" style="margin-top: 10px; margin-bottom: 0;"></div>
+      </div>
+
+      <div class="room-box" id="lobby-rooms-panel" style="max-width: 680px; margin-bottom: 20px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px;">
+          <label style="margin: 0;">🏟️ Salas Creadas (seleccioná una para unirte)</label>
+          <button id="btn-refresh-rooms" class="btn btn-outline btn-sm" type="button">🔄 Buscar salas</button>
+        </div>
+        <div id="lobby-rooms-list" style="display: flex; flex-direction: column; gap: 8px;">
+          <p style="color: var(--muted); font-size: 0.9rem;">Buscando salas activas...</p>
+        </div>
       </div>
 
       <div class="roles-grid">
@@ -2083,7 +2100,139 @@
       };
     }
 
+    let currentRoomCode = "FREIRE30";
+    let lobbyScannerPeer = null;
+    const STANDARD_ROOM_CODES = ["FREIRE30", "SALA1", "SALA2", "SALA3", "SALA4", "SALA5"];
+
+    document.querySelectorAll(".quick-code-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.getElementById("input-room-code").value = btn.dataset.code;
+        clearLobbyError();
+      });
+    });
+
+    function getKnownRoomCodes() {
+      let recent = [];
+      try {
+        recent = JSON.parse(localStorage.getItem("freire30_recent_rooms") || "[]");
+      } catch {}
+      return Array.from(new Set([...STANDARD_ROOM_CODES, ...recent])).slice(0, 12);
+    }
+
+    function rememberRoomCode(code) {
+      try {
+        const recent = JSON.parse(localStorage.getItem("freire30_recent_rooms") || "[]");
+        const next = [code, ...recent.filter(c => c !== code)].slice(0, 6);
+        localStorage.setItem("freire30_recent_rooms", JSON.stringify(next));
+      } catch {}
+    }
+
+    function stopLobbyScanner() {
+      if (lobbyScannerPeer) {
+        try { lobbyScannerPeer.destroy(); } catch {}
+        lobbyScannerPeer = null;
+      }
+    }
+
+    function renderDiscoveredRooms(roomsMap, scanning) {
+      const listEl = document.getElementById("lobby-rooms-list");
+      const entries = Object.values(roomsMap);
+      if (entries.length === 0) {
+        listEl.innerHTML = scanning
+          ? `<p style="color: var(--muted); font-size: 0.9rem;">Buscando salas activas...</p>`
+          : `<p style="color: var(--muted); font-size: 0.9rem;">No hay salas abiertas todavía. Creá una con <strong>Equipo Verde</strong> o tocá "🔄 Buscar salas".</p>`;
+        return;
+      }
+
+      listEl.innerHTML = entries.map(r => `
+        <div class="history-item" style="background: #FFF; border: 2px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <strong style="font-size: 1.05rem; letter-spacing: 0.06em;">${r.code}</strong>
+            <span class="pill ${r.rivalConnected ? "offline" : "online"}">
+              ${r.rivalConnected ? "🔴 En juego (2/2)" : "🟢 Esperando Equipo Azul (1/2)"}
+            </span>
+          </div>
+          <button
+            type="button"
+            class="btn btn-blue btn-sm join-discovered-btn"
+            data-code="${r.code}"
+            ${r.rivalConnected ? "disabled" : ""}
+          >
+            ${r.rivalConnected ? "Sala completa" : "🔵 Unirse como Azul"}
+          </button>
+        </div>
+      `).join("");
+
+      listEl.querySelectorAll(".join-discovered-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.getElementById("input-room-code").value = btn.dataset.code;
+          startAsTeam("B");
+        });
+      });
+    }
+
+    function scanLobbyRooms() {
+      stopLobbyScanner();
+      const listEl = document.getElementById("lobby-rooms-list");
+      if (typeof Peer === "undefined") {
+        listEl.innerHTML = `<p style="color: var(--muted); font-size: 0.9rem;">Sin conexión a internet para buscar salas (podés usar Modo Práctica).</p>`;
+        return;
+      }
+
+      const roomsMap = {};
+      renderDiscoveredRooms(roomsMap, true);
+      const codes = getKnownRoomCodes();
+      let pending = codes.length;
+
+      lobbyScannerPeer = new Peer({ debug: 0 });
+      lobbyScannerPeer.on("open", () => {
+        codes.forEach(code => {
+          if (!lobbyScannerPeer) return;
+          const probe = lobbyScannerPeer.connect(PEER_PREFIX + code, { reliable: true });
+          const timer = setTimeout(() => {
+            try { probe.close(); } catch {}
+            pending -= 1;
+            if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
+          }, 2200);
+
+          probe.on("open", () => {
+            probe.send({ type: "PING_INFO" });
+          });
+
+          probe.on("data", (msg) => {
+            if (msg && msg.type === "ROOM_INFO") {
+              clearTimeout(timer);
+              roomsMap[msg.code] = msg;
+              renderDiscoveredRooms(roomsMap, pending > 1);
+              try { probe.close(); } catch {}
+              pending -= 1;
+              if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
+            }
+          });
+
+          probe.on("error", () => {
+            clearTimeout(timer);
+            pending -= 1;
+            if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
+          });
+        });
+      });
+
+      lobbyScannerPeer.on("error", () => {
+        pending -= 1;
+        if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
+      });
+    }
+
+    document.getElementById("btn-refresh-rooms").addEventListener("click", scanLobbyRooms);
+    window.addEventListener("storage", (e) => {
+      if (e.key === "freire30_recent_rooms" && !views.lobby.classList.contains("hidden")) {
+        scanLobbyRooms();
+      }
+    });
+
     function cleanupNetwork() {
+      stopLobbyScanner();
       clearInterval(hostTimerInterval);
       hostTimerInterval = null;
       clearInterval(practiceTimerInterval);
@@ -2099,6 +2248,7 @@
       connBadge.textContent = "Listo para jugar";
       connBadge.className = "pill";
       showView("lobby");
+      scanLobbyRooms();
     });
 
     function ensurePeerJSLoaded() {
@@ -2227,6 +2377,8 @@
 
       const code = sanitizeCode(document.getElementById("input-room-code").value);
       document.getElementById("input-room-code").value = code;
+      currentRoomCode = code;
+      rememberRoomCode(code);
       cleanupNetwork();
 
       myTeam = team;
@@ -2259,8 +2411,13 @@
         peer.on("connection", (conn) => {
           conn.on("data", (msg) => handleHostMsgFromTeamB(conn, msg));
           conn.on("close", () => {
+            const wasPlayer = hostConnections.some(c => c.conn === conn);
             hostConnections = hostConnections.filter(c => c.conn !== conn);
-            renderTeamView(buildStatePacketFor("A"));
+            if (wasPlayer && gameState.phase === "PLAYING_TURN") {
+              clearInterval(hostTimerInterval);
+              gameState.phase = "IDLE";
+            }
+            if (wasPlayer) renderTeamView(buildStatePacketFor("A"));
           });
         });
 
@@ -2332,6 +2489,17 @@
 
     function handleHostMsgFromTeamB(conn, msg) {
       if (!msg || !msg.type) return;
+
+      if (msg.type === "PING_INFO") {
+        try {
+          conn.send({
+            type: "ROOM_INFO",
+            code: currentRoomCode,
+            rivalConnected: hostConnections.length > 0
+          });
+        } catch {}
+        return;
+      }
 
       if (msg.type === "REGISTER") {
         hostConnections = hostConnections.filter(c => c.conn !== conn);
@@ -2438,6 +2606,7 @@
     }
 
     function startParallelTurn() {
+      if (hostConnections.length === 0) return; // No se puede jugar hasta que se una Equipo Azul
       syncConfigFromPlayerInputs();
       resetGoalAnimation("player-mini");
 
@@ -2635,20 +2804,39 @@
 
       if (state.phase === "IDLE") {
         resetGoalAnimation("player-mini");
-        if (stageBanner) stageBanner.innerHTML = `<span>⚽ Patea ${state.kickingTeamName}</span>`;
-        stageStatus.className = "alert-box alert-info";
-        stageStatus.textContent = `Turno inicial: patea ${state.kickingTeamName}. Ambos responden en paralelo (30s).`;
-        startBtn.disabled = false;
-        startBtn.textContent = "⚽ Iniciar Penal";
+        const bothConnected = (myTeam === "B") || state.rivalConnected;
+        if (stageBanner) {
+          stageBanner.innerHTML = bothConnected
+            ? `<span>⚽ Patea ${state.kickingTeamName}</span>`
+            : `<span>⏳ Esperando al Equipo Azul...</span>`;
+        }
 
         activeCard.classList.add("hidden");
         resCard.classList.add("hidden");
         waitCard.classList.remove("hidden");
-        document.getElementById("player-wait-icon").textContent = state.activeRole === "kicker" ? "👟" : "🧤";
-        document.getElementById("player-wait-title").textContent =
-          state.activeRole === "kicker" ? "¡Te toca PATEAR!" : "¡Te toca ATAJAR!";
-        document.getElementById("player-wait-desc").textContent =
-          "Presioná 'Iniciar Penal' cuando ambos equipos estén listos.";
+
+        if (!bothConnected) {
+          stageStatus.className = "alert-box alert-warn";
+          stageStatus.textContent = "Todavía no se unió el Equipo Azul. Hasta que no se conecte a la sala, no se puede empezar.";
+          startBtn.disabled = true;
+          startBtn.textContent = "⏳ Esperando al Equipo Azul...";
+
+          document.getElementById("player-wait-icon").textContent = "📡";
+          document.getElementById("player-wait-title").textContent = "Esperando al Equipo Azul...";
+          document.getElementById("player-wait-desc").textContent =
+            `El otro equipo debe seleccionar la sala "${currentRoomCode}" en la página principal para poder jugar.`;
+        } else {
+          stageStatus.className = "alert-box alert-info";
+          stageStatus.textContent = `¡Ambos conectados! Turno inicial: patea ${state.kickingTeamName} en paralelo (30s).`;
+          startBtn.disabled = false;
+          startBtn.textContent = "⚽ Iniciar Penal";
+
+          document.getElementById("player-wait-icon").textContent = state.activeRole === "kicker" ? "👟" : "🧤";
+          document.getElementById("player-wait-title").textContent =
+            state.activeRole === "kicker" ? "¡Te toca PATEAR!" : "¡Te toca ATAJAR!";
+          document.getElementById("player-wait-desc").textContent =
+            "Presioná 'Iniciar Penal' para comenzar (30 segundos).";
+        }
         return;
       }
 
@@ -3002,6 +3190,9 @@
       showPracticeSub("pr-result-area");
       animateGoalIn("pr-mini", result, prState.kickerDir || "Centro", title, sub);
     }
+
+    // Buscar salas activas al cargar la página principal
+    scanLobbyRooms();
   </script>
 </body>
 </html>
