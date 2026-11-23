@@ -820,6 +820,7 @@
       <button type="button" class="btn-small" id="btn-album">🏅 Recuerdos</button>
       <button type="button" class="btn-small" id="btn-sound">🔊 Sonido: ON</button>
       <button type="button" class="btn-small" id="btn-new-game">⚙️ Configurar</button>
+      <button type="button" class="btn-small" id="btn-mode-1996">🎲 Jugar como en 1996</button>
     </div>
   </header>
 
@@ -1033,6 +1034,31 @@
       <div class="modal-body">
         <div class="album-list" id="album-list"></div>
         <button type="button" class="btn-primary" id="btn-close-album">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jugar como en 1996 Modal -->
+  <div class="modal-backdrop" id="modal-1996" role="dialog" aria-modal="true">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>📦 Jugar como en 1996</h2>
+        <span class="year-pill">Modo Físico</span>
+      </div>
+      <div class="modal-body" style="text-align:center;">
+        <div style="font-size:2.8rem;">🎲📦🪑</div>
+        <h3 style="font-size:1.15rem; font-weight:900; color:#064e27;">
+          ¡En 1996 se jugaba en la mesa, con caja, tablero y dado en mano!
+        </h3>
+        <p style="font-size:0.88rem; font-weight:700; color:#334155; line-height:1.45;">
+          Para revivir la experiencia de los juegos de mesa de antes, te dejamos el
+          <strong>PDF completo listo para imprimir</strong> (tablero, reglas, fichas, dado armable y las 70 tarjetas de preguntas)
+          para jugar en modo físico en familia o en el aula.
+        </p>
+        <a href="Mision_Freire_30_Ludo_Imprimible.pdf" download="Mision_Freire_30_Ludo_Imprimible.pdf" target="_blank" rel="noopener" class="btn-primary" style="text-decoration:none; display:block;">
+          📄 Descargar PDF para Imprimir
+        </a>
+        <button type="button" class="btn-secondary" id="btn-close-1996">Cerrar</button>
       </div>
     </div>
   </div>
@@ -2501,6 +2527,14 @@
       document.getElementById("btn-sound").addEventListener("click", (e) => {
         soundOn = !soundOn;
         e.currentTarget.textContent = soundOn ? "🔊 Sonido: ON" : "🔇 Sonido: OFF";
+      });
+
+      const modal1996 = document.getElementById("modal-1996");
+      document.getElementById("btn-mode-1996").addEventListener("click", () => {
+        modal1996.classList.add("open");
+      });
+      document.getElementById("btn-close-1996").addEventListener("click", () => {
+        modal1996.classList.remove("open");
       });
     })();
   </script>
