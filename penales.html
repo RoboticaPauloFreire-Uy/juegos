@@ -943,7 +943,8 @@
             value="FREIRE30"
             placeholder="FREIRE30"
           />
-          <button id="btn-random-code" class="btn btn-outline" type="button">🎲 Nuevo código</button>
+          <button id="btn-join-team-a" class="btn btn-green" type="button">🏟️ Crear Sala</button>
+          <button id="btn-join-team-b" class="btn btn-blue" type="button">🔵 Unirse</button>
         </div>
         <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;">
           <button type="button" class="btn btn-outline btn-sm quick-code-btn" data-code="FREIRE30">FREIRE30</button>
@@ -965,21 +966,7 @@
         </div>
       </div>
 
-      <div class="roles-grid">
-        <div class="role-card">
-          <div class="role-icon">🟢</div>
-          <h3>1. Equipo Verde (Crea la Sala)</h3>
-          <p>Crea la sala con el código y juega directamente. Rota automáticamente entre Pateador y Arquero.</p>
-          <button id="btn-join-team-a" class="btn btn-green">Crear Sala y Jugar (Verde)</button>
-        </div>
-
-        <div class="role-card">
-          <div class="role-icon">🔵</div>
-          <h3>2. Equipo Azul (Se une a la Sala)</h3>
-          <p>Se conecta a la sala del Equipo Verde y juega en paralelo con rotación automática.</p>
-          <button id="btn-join-team-b" class="btn btn-blue">Unirse y Jugar (Azul)</button>
-        </div>
-
+      <div class="roles-grid" style="max-width: 420px; margin: 0 auto;">
         <div class="role-card">
           <div class="role-icon">📱</div>
           <h3>Modo Práctica (1 Pantalla)</h3>
@@ -2051,14 +2038,6 @@
       e.target.textContent = soundEnabled ? "🔊 Sonido" : "🔇 Silencio";
     });
 
-    document.getElementById("btn-random-code").addEventListener("click", () => {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let code = "PF";
-      for (let i = 0; i < 4; i++) code += chars[Math.floor(Math.random() * chars.length)];
-      document.getElementById("input-room-code").value = code;
-      clearLobbyError();
-    });
-
     /* =========================================================================
        MOTOR PARALELO P2P (SIN MÁQUINA DEL PROFESOR)
        Equipo Verde ("A") crea la sala y juega; Equipo Azul ("B") se une y juega.
@@ -2198,6 +2177,17 @@
       }
 
       const roomsMap = {};
+      // Cargar salas locales recientes (mismo navegador) inmediatamente
+      try {
+        const localRooms = JSON.parse(localStorage.getItem("freire30_active_rooms") || "{}");
+        const now = Date.now();
+        Object.values(localRooms).forEach(r => {
+          if (r && r.code && now - (r.ts || 0) < 90000) {
+            roomsMap[r.code] = r;
+          }
+        });
+      } catch {}
+
       renderDiscoveredRooms(roomsMap, true);
       const codes = getKnownRoomCodes();
       let pending = codes.length;
@@ -2219,7 +2209,10 @@
       lobbyScannerPeer.on("open", () => {
         codes.forEach(code => {
           if (!lobbyScannerPeer) return;
-          const probe = lobbyScannerPeer.connect(PEER_PREFIX + code, { reliable: true });
+          const probe = lobbyScannerPeer.connect(PEER_PREFIX + code, {
+            reliable: true,
+            metadata: { probe: true }
+          });
           let settled = false;
           const timer = setTimeout(() => {
             if (settled) return;
@@ -2443,11 +2436,27 @@
         peer.on("open", () => {
           connBadge.textContent = `Sala ${code} · 🟢 Equipo Verde`;
           connBadge.className = "pill online";
+          try {
+            const localRooms = JSON.parse(localStorage.getItem("freire30_active_rooms") || "{}");
+            localRooms[code] = { code, rivalConnected: false, ts: Date.now() };
+            localStorage.setItem("freire30_active_rooms", JSON.stringify(localRooms));
+          } catch {}
           if (roomChannel) roomChannel.postMessage({ type: "ROOM_ANNOUNCE", code });
           renderTeamView(buildStatePacketFor("A"));
         });
 
         peer.on("connection", (conn) => {
+          conn.on("open", () => {
+            if (conn.metadata && conn.metadata.probe) {
+              try {
+                conn.send({
+                  type: "ROOM_INFO",
+                  code: currentRoomCode,
+                  rivalConnected: hostConnections.length > 0
+                });
+              } catch {}
+            }
+          });
           conn.on("data", (msg) => handleHostMsgFromTeamB(conn, msg));
           conn.on("close", () => {
             const wasPlayer = hostConnections.some(c => c.conn === conn);
