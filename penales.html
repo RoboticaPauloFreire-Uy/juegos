@@ -1318,6 +1318,9 @@
               <h2 id="player-res-title" style="font-size: 1.7rem; font-weight: 900; margin-bottom: 6px;">¡GOOOL!</h2>
               <p id="player-res-desc" style="color: var(--muted); font-size: 1rem; margin-bottom: 12px;"></p>
               <div id="player-res-reveal" class="answer-reveal" style="text-align: left;"></div>
+              <div id="player-res-countdown" class="pill warn" style="margin-top: 12px; font-size: 0.95rem;">
+                ⏱️ Siguiente penal en 5s...
+              </div>
             </div>
           </div>
         </div>
@@ -2064,6 +2067,7 @@
     let hostConnections = []; // conexiones de Equipo Azul
     let clientConn = null;
     let hostTimerInterval = null;
+    let autoNextInterval = null;
     let myTeam = "A"; // "A" (Host+Jugador) | "B" (Cliente+Jugador)
 
     let gameState = createInitialGameState();
@@ -2235,6 +2239,8 @@
       stopLobbyScanner();
       clearInterval(hostTimerInterval);
       hostTimerInterval = null;
+      clearInterval(autoNextInterval);
+      autoNextInterval = null;
       clearInterval(practiceTimerInterval);
       practiceTimerInterval = null;
       hostConnections.forEach(c => { try { c.conn.close(); } catch {} });
@@ -2453,6 +2459,8 @@
               renderTeamView(msg);
             } else if (msg.type === "TICK") {
               updatePlayerTimerDisplay(msg.timeLeft);
+            } else if (msg.type === "NEXT_TICK") {
+              updateNextCountdownUI(msg.seconds);
             }
           });
 
@@ -2598,6 +2606,7 @@
 
     function resetMatchHost() {
       clearInterval(hostTimerInterval);
+      clearInterval(autoNextInterval);
       gameState = createInitialGameState();
       syncConfigFromPlayerInputs();
       resetGoalAnimation("player-mini");
@@ -2607,6 +2616,7 @@
 
     function startParallelTurn() {
       if (hostConnections.length === 0) return; // No se puede jugar hasta que se una Equipo Azul
+      clearInterval(autoNextInterval);
       syncConfigFromPlayerInputs();
       resetGoalAnimation("player-mini");
 
@@ -2756,10 +2766,42 @@
       } else {
         gameState.phase = "RESULT";
         gameState.currentTeam = team === "A" ? "B" : "A";
+        startAutoNextTimer();
       }
 
       broadcastStateToTeamB();
       renderTeamView(buildStatePacketFor("A"));
+    }
+
+    function startAutoNextTimer() {
+      clearInterval(autoNextInterval);
+      let secs = 5;
+      updateNextCountdownUI(secs);
+      autoNextInterval = setInterval(() => {
+        if (gameState.phase !== "RESULT") {
+          clearInterval(autoNextInterval);
+          return;
+        }
+        secs -= 1;
+        updateNextCountdownUI(secs);
+        hostConnections.forEach(({ conn }) => {
+          try { conn.send({ type: "NEXT_TICK", seconds: secs }); } catch {}
+        });
+        if (secs <= 0) {
+          clearInterval(autoNextInterval);
+          startParallelTurn();
+        }
+      }, 1000);
+    }
+
+    function updateNextCountdownUI(secs) {
+      const val = Math.max(0, secs);
+      const pill = document.getElementById("player-res-countdown");
+      const startBtn = document.getElementById("btn-pl-start-kick");
+      if (pill) pill.textContent = `⏱️ Siguiente penal en ${val}s...`;
+      if (startBtn && gameState.phase !== "MATCH_OVER") {
+        startBtn.textContent = `⏱️ Siguiente penal en ${val}s...`;
+      }
     }
 
     /* ---------------- RENDERIZADO DE PANTALLA DIVIDIDA (AMBOS EQUIPOS) ---------------- */
@@ -2841,6 +2883,10 @@
       }
 
       if (state.phase === "PLAYING_TURN") {
+        // Inicializar la imagen del arco al empezar cada penal en ambos dispositivos
+        if (playerCurrentTurnRendered !== state.turnNumber) {
+          resetGoalAnimation("player-mini");
+        }
         const rivalText = state.rivalSubmitted ? "⚡ ¡El rival ya contestó!" : "⏳ Rival respondiendo...";
         if (stageBanner) stageBanner.innerHTML = `<span>⏱️ ${state.timeLeft}s · ${rivalText}</span>`;
         stageStatus.className = "alert-box alert-warn";
@@ -2874,8 +2920,20 @@
         if (stageBanner) stageBanner.innerHTML = `<span>${state.lastOutcome.title}</span>`;
         stageStatus.className = "alert-box " + (state.lastOutcome.result === "goal" ? "alert-success" : "alert-info");
         stageStatus.textContent = state.lastOutcome.subtitle;
-        startBtn.disabled = false;
-        startBtn.textContent = state.phase === "MATCH_OVER" ? "🏆 Nueva Tanda" : "⚽ Siguiente Penal";
+
+        const countdownPill = document.getElementById("player-res-countdown");
+        if (state.phase === "MATCH_OVER") {
+          startBtn.disabled = false;
+          startBtn.textContent = "🏆 Nueva Tanda";
+          if (countdownPill) countdownPill.classList.add("hidden");
+        } else {
+          startBtn.disabled = true;
+          startBtn.textContent = "⏱️ Siguiente penal en 5s...";
+          if (countdownPill) {
+            countdownPill.classList.remove("hidden");
+            countdownPill.textContent = "⏱️ Siguiente penal en 5s...";
+          }
+        }
 
         waitCard.classList.add("hidden");
         activeCard.classList.add("hidden");
@@ -3189,6 +3247,21 @@
       document.getElementById("pr-res-reveal").innerHTML = html;
       showPracticeSub("pr-result-area");
       animateGoalIn("pr-mini", result, prState.kickerDir || "Centro", title, sub);
+
+      let prSecs = 5;
+      const prNextBtn = document.getElementById("btn-pr-next");
+      prNextBtn.disabled = true;
+      prNextBtn.textContent = `⏱️ Siguiente penal en ${prSecs}s...`;
+      clearInterval(practiceTimerInterval);
+      practiceTimerInterval = setInterval(() => {
+        prSecs -= 1;
+        prNextBtn.textContent = `⏱️ Siguiente penal en ${prSecs}s...`;
+        if (prSecs <= 0) {
+          clearInterval(practiceTimerInterval);
+          prNextBtn.disabled = false;
+          startPracticeKick();
+        }
+      }, 1000);
     }
 
     // Buscar salas activas al cargar la página principal
