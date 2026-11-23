@@ -2325,14 +2325,18 @@
       if (splash) splash.className = "result-splash hidden";
     }
 
-    function animateGoalIn(prefix, result, shotDir, title, subtitle) {
+    function animateGoalIn(prefix, result, shotDir, title, subtitle, keeperDir = null) {
       const keeper = document.getElementById(`${prefix}-keeper`);
       const ball = document.getElementById(`${prefix}-ball`);
       const splash = document.getElementById(`${prefix}-result-splash`);
       if (!keeper || !ball || !splash) return;
 
-      const dirKey = (shotDir || "Centro").toLowerCase();
-      const dirClass = dirKey === "izquierda" ? "left" : dirKey === "derecha" ? "right" : "center";
+      const toDirClass = (d) => {
+        const k = (d || "Centro").toLowerCase();
+        return k === "izquierda" ? "left" : k === "derecha" ? "right" : "center";
+      };
+      const dirClass = toDirClass(shotDir);
+      const keeperClass = keeperDir ? toDirClass(keeperDir) : (dirClass === "left" ? "right" : "left");
 
       keeper.className = "keeper-sprite";
       ball.className = "ball-sprite";
@@ -2340,8 +2344,7 @@
       void ball.offsetWidth;
 
       if (result === "goal") {
-        const wrongDive = dirClass === "left" ? "dive-right" : dirClass === "right" ? "dive-left" : "dive-left";
-        keeper.classList.add(wrongDive);
+        keeper.classList.add(`dive-${keeperClass}`);
         ball.classList.add(`shoot-${dirClass}`);
       } else if (result === "save") {
         keeper.classList.add(`dive-${dirClass}`);
@@ -2704,24 +2707,36 @@
 
       const kCorrect = !ks.timedOut && ks.optionIndex >= 0 && kq.options[ks.optionIndex] === kq.correct;
       const gCorrect = !gs.timedOut && gs.optionIndex >= 0 && gq.options[gs.optionIndex] === gq.correct;
+      const shotDir = ks.direction || "Centro";
+      const keeperDir = gs.direction || "Centro";
+      const sameDirection = !gs.timedOut && shotDir === keeperDir;
 
       let result, title, subtitle;
-      if (!kCorrect) {
-        result = "miss";
-        title = "PELOTA DESVIADA ❌";
-        subtitle = ks.timedOut ? "¡Se acabó el tiempo del pateador!" : "El pateador no acertó la respuesta.";
-      } else if (gCorrect) {
-        result = "save";
-        title = "¡ATAJADA! 🧤";
-        subtitle = "¡Ambos acertaron! El arquero tapó el remate.";
-      } else {
+      if (kCorrect && gCorrect) {
+        if (sameDirection) {
+          result = "save";
+          title = "¡ATAJADA! 🧤";
+          subtitle = `¡Atajó! Ambos acertaron y el arquero adivinó el lado (${shotDir}).`;
+        } else {
+          result = "goal";
+          title = "¡GOOOL! ⚽";
+          subtitle = `Ambos acertaron, pero el pateador tiró a ${shotDir} y el arquero a ${keeperDir}.`;
+        }
+      } else if (kCorrect && !gCorrect) {
         result = "goal";
         title = "¡GOOOL! ⚽";
-        subtitle = gs.timedOut ? "El pateador acertó y al arquero se le acabó el tiempo." : "El pateador acertó y el arquero falló.";
+        subtitle = gs.timedOut ? "El pateador acertó y al arquero se le acabó el tiempo." : "El pateador acertó y el arquero falló la respuesta.";
+      } else if (!kCorrect && gCorrect) {
+        result = "save";
+        title = "¡ATAJADA! 🧤";
+        subtitle = ks.timedOut ? "Al pateador se le acabó el tiempo y el arquero acertó." : "El pateador falló la respuesta y el arquero acertó.";
+      } else {
+        result = "miss";
+        title = "PELOTA DESVIADA ❌";
+        subtitle = "Ambos fallaron (o se acabó el tiempo): ¡pelota desviada!";
       }
 
       const team = gameState.currentTeam;
-      const shotDir = ks.direction || "Centro";
 
       if (team === "A") {
         gameState.kicksA.push(result);
@@ -2736,6 +2751,7 @@
         title,
         subtitle,
         shotDir,
+        keeperDir,
         kickerQ: { q: kq.q, correct: kq.correct },
         keeperQ: { q: gq.q, correct: gq.correct }
       };
@@ -2953,7 +2969,8 @@
             state.lastOutcome.result,
             state.lastOutcome.shotDir,
             state.lastOutcome.title,
-            state.lastOutcome.subtitle
+            state.lastOutcome.subtitle,
+            state.lastOutcome.keeperDir
           );
         }
       }
@@ -3208,18 +3225,27 @@
     function submitPracticeAnswer(timedOut) {
       if (prState.phase === "KICKER") {
         prState.kickerDir = prState.selectedDir || "Centro";
-        const isCorrect = !timedOut && prState.kickerQ.options[prState.selectedOpt] === prState.kickerQ.correct;
-        if (!isCorrect) {
-          finishPracticeTurn("miss", "PELOTA DESVIADA ❌", timedOut ? "¡Se acabó el tiempo!" : "El pateador no acertó.", false);
-        } else {
-          showPracticeSub("pr-handoff");
-        }
+        prState.kickerCorrect = !timedOut && prState.kickerQ.options[prState.selectedOpt] === prState.kickerQ.correct;
+        prState.kickerTimedOut = timedOut;
+        showPracticeSub("pr-handoff");
       } else if (prState.phase === "KEEPER") {
-        const isCorrect = !timedOut && prState.keeperQ.options[prState.selectedOpt] === prState.keeperQ.correct;
-        if (isCorrect) {
-          finishPracticeTurn("save", "¡ATAJADA! 🧤", "El arquero respondió bien y tapó el remate.", true);
+        prState.keeperDir = prState.selectedDir || "Centro";
+        const gCorrect = !timedOut && prState.keeperQ.options[prState.selectedOpt] === prState.keeperQ.correct;
+        const kCorrect = !!prState.kickerCorrect;
+        const sameDir = !timedOut && prState.keeperDir === (prState.kickerDir || "Centro");
+
+        if (kCorrect && gCorrect) {
+          if (sameDir) {
+            finishPracticeTurn("save", "¡ATAJADA! 🧤", `¡Atajó! Ambos acertaron y el arquero adivinó el lado (${prState.kickerDir}).`, true);
+          } else {
+            finishPracticeTurn("goal", "¡GOOOL! ⚽", `Ambos acertaron, pero el pateador tiró a ${prState.kickerDir} y el arquero a ${prState.keeperDir}.`, true);
+          }
+        } else if (kCorrect && !gCorrect) {
+          finishPracticeTurn("goal", "¡GOOOL! ⚽", timedOut ? "El pateador acertó y se agotó el tiempo del arquero." : "El pateador acertó y el arquero falló.", true);
+        } else if (!kCorrect && gCorrect) {
+          finishPracticeTurn("save", "¡ATAJADA! 🧤", "El pateador falló la respuesta y el arquero acertó.", true);
         } else {
-          finishPracticeTurn("goal", "¡GOOOL! ⚽", timedOut ? "Se agotó el tiempo del arquero." : "El arquero falló la respuesta.", true);
+          finishPracticeTurn("miss", "PELOTA DESVIADA ❌", "Ambos fallaron: ¡pelota desviada!", true);
         }
       }
     }
@@ -3246,7 +3272,7 @@
       }
       document.getElementById("pr-res-reveal").innerHTML = html;
       showPracticeSub("pr-result-area");
-      animateGoalIn("pr-mini", result, prState.kickerDir || "Centro", title, sub);
+      animateGoalIn("pr-mini", result, prState.kickerDir || "Centro", title, sub, prState.keeperDir || null);
 
       let prSecs = 5;
       const prNextBtn = document.getElementById("btn-pr-next");
