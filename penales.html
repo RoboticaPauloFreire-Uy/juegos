@@ -2131,7 +2131,20 @@
       } catch {}
     }
 
+    let lobbyAutoRefreshTimer = null;
+    const roomChannel = (typeof BroadcastChannel !== "undefined") ? new BroadcastChannel("freire30_rooms") : null;
+    if (roomChannel) {
+      roomChannel.onmessage = (ev) => {
+        if (ev.data && ev.data.type === "ROOM_ANNOUNCE" && !views.lobby.classList.contains("hidden")) {
+          rememberRoomCode(ev.data.code);
+          scanLobbyRooms();
+        }
+      };
+    }
+
     function stopLobbyScanner() {
+      clearTimeout(lobbyAutoRefreshTimer);
+      lobbyAutoRefreshTimer = null;
       if (lobbyScannerPeer) {
         try { lobbyScannerPeer.destroy(); } catch {}
         lobbyScannerPeer = null;
@@ -2143,8 +2156,8 @@
       const entries = Object.values(roomsMap);
       if (entries.length === 0) {
         listEl.innerHTML = scanning
-          ? `<p style="color: var(--muted); font-size: 0.9rem;">Buscando salas activas...</p>`
-          : `<p style="color: var(--muted); font-size: 0.9rem;">No hay salas abiertas todavía. Creá una con <strong>Equipo Verde</strong> o tocá "🔄 Buscar salas".</p>`;
+          ? `<p style="color: var(--muted); font-size: 0.9rem;">Buscando salas activas... (esperá un momento)</p>`
+          : `<p style="color: var(--muted); font-size: 0.9rem;">No se encontraron salas abiertas en los códigos estándar (FREIRE30, SALA1–SALA5). Creá una con <strong>Equipo Verde</strong> o tocá "🔄 Buscar salas".</p>`;
         return;
       }
 
@@ -2177,6 +2190,7 @@
 
     function scanLobbyRooms() {
       stopLobbyScanner();
+      if (views.lobby.classList.contains("hidden")) return;
       const listEl = document.getElementById("lobby-rooms-list");
       if (typeof Peer === "undefined") {
         listEl.innerHTML = `<p style="color: var(--muted); font-size: 0.9rem;">Sin conexión a internet para buscar salas (podés usar Modo Práctica).</p>`;
@@ -2187,44 +2201,59 @@
       renderDiscoveredRooms(roomsMap, true);
       const codes = getKnownRoomCodes();
       let pending = codes.length;
+      let finished = false;
+
+      const finishProbe = () => {
+        pending -= 1;
+        if (pending <= 0 && !finished) {
+          finished = true;
+          renderDiscoveredRooms(roomsMap, false);
+          // Re-escanear automáticamente cada 7s mientras siga en el Lobby
+          lobbyAutoRefreshTimer = setTimeout(() => {
+            if (!views.lobby.classList.contains("hidden")) scanLobbyRooms();
+          }, 7000);
+        }
+      };
 
       lobbyScannerPeer = new Peer({ debug: 0 });
       lobbyScannerPeer.on("open", () => {
         codes.forEach(code => {
           if (!lobbyScannerPeer) return;
           const probe = lobbyScannerPeer.connect(PEER_PREFIX + code, { reliable: true });
+          let settled = false;
           const timer = setTimeout(() => {
+            if (settled) return;
+            settled = true;
             try { probe.close(); } catch {}
-            pending -= 1;
-            if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
-          }, 2200);
+            finishProbe();
+          }, 5000);
 
           probe.on("open", () => {
             probe.send({ type: "PING_INFO" });
           });
 
           probe.on("data", (msg) => {
-            if (msg && msg.type === "ROOM_INFO") {
+            if (msg && msg.type === "ROOM_INFO" && !settled) {
+              settled = true;
               clearTimeout(timer);
               roomsMap[msg.code] = msg;
               renderDiscoveredRooms(roomsMap, pending > 1);
               try { probe.close(); } catch {}
-              pending -= 1;
-              if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
+              finishProbe();
             }
           });
 
           probe.on("error", () => {
+            if (settled) return;
+            settled = true;
             clearTimeout(timer);
-            pending -= 1;
-            if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
+            finishProbe();
           });
         });
       });
 
       lobbyScannerPeer.on("error", () => {
-        pending -= 1;
-        if (pending <= 0) renderDiscoveredRooms(roomsMap, false);
+        // peer-unavailable se dispara en el Peer padre; los timers individuales cierran cada probe
       });
     }
 
@@ -2414,6 +2443,7 @@
         peer.on("open", () => {
           connBadge.textContent = `Sala ${code} · 🟢 Equipo Verde`;
           connBadge.className = "pill online";
+          if (roomChannel) roomChannel.postMessage({ type: "ROOM_ANNOUNCE", code });
           renderTeamView(buildStatePacketFor("A"));
         });
 
